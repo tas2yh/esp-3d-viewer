@@ -1,175 +1,1042 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP 3D シミュレーター - 複数ビュー</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background: #0f172a;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESPってなに？ — 3Dでわかる横滑り防止装置</title>
+<style>
+  :root {
+    --bg-dark: #0d1420;
+    --accent: #35c4e8;
+    --warn: #ff9f2e;
+    --danger: #ff5252;
+    --ok: #4cd97b;
+    --text-light: #eef3f8;
+    --text-dark: #22303c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
+    background: #f5f7fa;
+    color: var(--text-dark);
+    line-height: 1.75;
+  }
 
-        /* ===== タブヘッダー ===== */
-        .tabs-header {
-            display: flex;
-            background: #0f172a;
-            border-bottom: 2px solid #334155;
-            gap: 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
+  /* ===== 3Dステージ ===== */
+  #stage {
+    position: relative;
+    width: 100%;
+    height: 88vh;
+    min-height: 480px;
+    background: var(--bg-dark);
+    overflow: hidden;
+  }
+  #stage canvas { display: block; width: 100%; height: 100%; }
 
-        .tab-button {
-            padding: 16px 24px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            color: #94a3b8;
-            border: none;
-            background: none;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            white-space: nowrap;
-        }
+  .overlay { position: absolute; z-index: 5; }
 
-        .tab-button:hover {
-            color: #cbd5e1;
-            background: #1e293b;
-        }
+  #titleCard {
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: var(--text-light);
+    text-shadow: 0 2px 12px rgba(0,0,0,.6);
+    pointer-events: none;
+    width: 92%;
+    transition: opacity .6s;
+  }
+  #titleCard h1 { font-size: clamp(1.5rem, 4.2vw, 2.6rem); font-weight: 800; letter-spacing: .02em; }
+  #titleCard p { font-size: clamp(.85rem, 2.2vw, 1.05rem); opacity: .9; margin-top: .4em; }
+  #titleCard .esp { color: var(--accent); }
+  #titleCard.hidden { opacity: 0; }
 
-        .tab-button.active {
-            color: #3b82f6;
-            border-bottom-color: #3b82f6;
-        }
+  /* HUD（左上） */
+  #hud {
+    top: 14px; left: 14px;
+    background: rgba(10, 18, 30, .72);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 14px;
+    padding: 12px 14px;
+    color: var(--text-light);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity .4s;
+    pointer-events: none;
+  }
+  #hud.show { opacity: 1; }
+  #speedBox { text-align: center; min-width: 74px; }
+  #speedVal { font-size: 1.9rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  #speedBox small { font-size: .68rem; opacity: .75; }
+  #espLamp {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    font-size: .62rem; font-weight: 700; letter-spacing: .05em;
+    color: #7c8794;
+  }
+  #espLamp svg { width: 40px; height: 30px; }
+  #espLamp .lampCar { stroke: #7c8794; }
+  #espLamp.blink { color: var(--warn); animation: lampBlink .5s steps(2) infinite; }
+  #espLamp.blink .lampCar { stroke: var(--warn); }
+  #espLamp.off { opacity: .45; }
+  @keyframes lampBlink { 50% { opacity: .25; } }
 
-        .tab-content {
-            display: none;
-        }
+  /* 車輪ミニ図 */
+  #wheelMap { text-align: center; }
+  #wheelMap svg { width: 46px; height: 72px; display: block; margin: 0 auto; }
+  #wheelMap small { font-size: .6rem; opacity: .75; display: block; margin-top: 2px; }
+  .wm-body { fill: none; stroke: #9fb2c4; stroke-width: 2; }
+  .wm-wheel { fill: #55636f; rx: 2; transition: fill .15s; }
+  .wm-wheel.braking { fill: var(--warn); animation: wheelPulse .4s ease-in-out infinite alternate; }
+  @keyframes wheelPulse { to { fill: #ffd27a; } }
 
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in;
-        }
+  /* キャプション */
+  #caption {
+    bottom: 108px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: min(620px, 92%);
+    background: rgba(10, 18, 30, .82);
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 14px;
+    padding: 12px 22px;
+    color: var(--text-light);
+    font-size: clamp(.9rem, 2.4vw, 1.08rem);
+    font-weight: 600;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity .35s;
+    pointer-events: none;
+  }
+  #caption.show { opacity: 1; }
+  #caption.alert { border-color: var(--danger); color: #ffd9d9; }
+  #caption.action { border-color: var(--warn); color: #ffe9c9; }
+  #caption.good { border-color: var(--ok); color: #d5f7e1; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+  /* スローモーション表示 */
+  #slowTag {
+    top: 16px; left: 50%; transform: translateX(-50%);
+    color: var(--warn);
+    font-weight: 800;
+    font-size: .85rem;
+    letter-spacing: .35em;
+    padding: 6px 18px 6px 22px;
+    border: 1px solid var(--warn);
+    border-radius: 999px;
+    background: rgba(20, 14, 2, .5);
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+  }
+  #slowTag.show { opacity: 1; animation: lampBlink 1s steps(2) infinite; }
 
-        /* Claude ビュー */
-        #claude-view {
-            background: #f5f7fa;
-            color: #22303c;
-            min-height: 100vh;
-        }
+  /* 操作ボタン */
+  #controls {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 94%;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: clamp(.85rem, 2.4vw, 1rem);
+    font-weight: 700;
+    padding: 13px 26px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: transform .12s, box-shadow .12s, opacity .2s;
+    box-shadow: 0 4px 18px rgba(0,0,0,.4);
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+  .btn-off { background: linear-gradient(135deg, #e5484d, #c0262c); }
+  .btn-on  { background: linear-gradient(135deg, #23b26d, #128a4e); }
+  .btn-sub {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.3);
+    font-weight: 600;
+    padding: 10px 18px;
+    font-size: .85rem;
+  }
+  #controls .btn[disabled] { opacity: .35; pointer-events: none; }
 
-        /* Gemini ビュー */
-        #gemini-view {
-            background: #0f172a;
-            color: #e2e8f0;
-            min-height: 100vh;
-        }
+  #viewToggle { top: 14px; right: 14px; display: flex; gap: 8px; }
 
-        /* 元のスタイルはiframeで保持 */
-        iframe {
-            width: 100%;
-            height: 100vh;
-            border: none;
-        }
-    </style>
+  /* 結果パネル */
+  #endPanel {
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(.94);
+    background: rgba(10, 18, 30, .92);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 20px;
+    padding: 28px 34px;
+    color: var(--text-light);
+    text-align: center;
+    max-width: min(480px, 92%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s, transform .4s;
+    backdrop-filter: blur(8px);
+  }
+  #endPanel.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  #endPanel .emoji { font-size: 2.6rem; }
+  #endPanel h2 { font-size: 1.3rem; margin: 8px 0 6px; }
+  #endPanel p { font-size: .92rem; opacity: .9; margin-bottom: 18px; }
+  #endPanel .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  #webglError {
+    position: absolute; inset: 0;
+    display: none;
+    place-items: center;
+    color: var(--text-light);
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
+    background: var(--bg-dark);
+  }
+
+  .scrollHint {
+    bottom: 8px; right: 18px;
+    color: rgba(255,255,255,.55);
+    font-size: .72rem;
+    pointer-events: none;
+  }
+
+  /* ===== 解説セクション ===== */
+  main { max-width: 900px; margin: 0 auto; padding: 56px 20px 24px; }
+  section { margin-bottom: 64px; }
+  .kicker {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .18em;
+    color: var(--accent);
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 3px 14px;
+    margin-bottom: 12px;
+  }
+  h2.sec { font-size: clamp(1.35rem, 3.4vw, 1.8rem); font-weight: 800; margin-bottom: 18px; }
+  .lead { font-size: 1.02rem; }
+  .lead strong { color: #c0262c; }
+
+  .nameChips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip {
+    background: #e8eef5;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: .82rem;
+    font-weight: 600;
+    color: #44566b;
+  }
+  .chip b { color: var(--text-dark); }
+
+  .noteBar {
+    margin-top: 18px;
+    background: #eaf6fd;
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: .9rem;
+  }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+  .step {
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px 20px;
+    box-shadow: 0 3px 14px rgba(30, 50, 80, .08);
+    position: relative;
+  }
+  .step .num {
+    position: absolute; top: -14px; left: 18px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 800;
+    font-size: .8rem;
+    border-radius: 999px;
+    padding: 4px 13px;
+  }
+  .step:nth-child(2) .num { background: #7a6bd6; }
+  .step:nth-child(3) .num { background: #e08a2e; }
+  .step .icon { font-size: 2rem; margin: 6px 0 8px; }
+  .step h3 { font-size: 1.05rem; margin-bottom: 6px; }
+  .step p { font-size: .88rem; color: #4a5a6a; }
+
+  details {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(30, 50, 80, .07);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  summary {
+    cursor: pointer;
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: .98rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; color: var(--accent); transition: transform .2s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details .body { padding: 0 20px 18px 42px; font-size: .92rem; color: #40505f; }
+
+  .summaryBand {
+    background: linear-gradient(135deg, #10263d, #0d3a4a);
+    color: var(--text-light);
+    border-radius: 20px;
+    padding: 34px 30px;
+    text-align: center;
+  }
+  .summaryBand p { font-size: clamp(1rem, 2.8vw, 1.2rem); font-weight: 700; }
+  .summaryBand small { display: block; margin-top: 10px; opacity: .8; font-weight: 400; }
+  .summaryBand .backBtn {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--bg-dark);
+    background: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: .9rem;
+    padding: 10px 24px;
+    border-radius: 999px;
+  }
+
+  footer { text-align: center; padding: 26px; font-size: .78rem; color: #8a99a8; }
+
+  @media (max-width: 700px) {
+    .steps { grid-template-columns: 1fr; gap: 22px; }
+    #hud { transform: scale(.85); transform-origin: top left; }
+    #stage { height: 78vh; }
+    #caption { bottom: 118px; }
+  }
+</style>
 </head>
 <body>
 
-    <!-- タブナビゲーション -->
-    <div class="tabs-header">
-        <button class="tab-button active" data-tab="claude">
-            🤖 Claude - Original
-        </button>
-        <button class="tab-button" data-tab="gemini">
-            ✨ Gemini Enterprise
-        </button>
+<!-- ============ 3D体験ステージ ============ -->
+<div id="stage">
+  <div id="webglError">
+    <p>お使いのブラウザでは3D表示（WebGL）を利用できませんでした。<br>
+    下にスクロールすると文章での解説をご覧いただけます。</p>
+  </div>
+
+  <div id="titleCard" class="overlay">
+    <h1>もしもの時、クルマが自分で立て直す。<br><span class="esp">ESP</span>（横滑り防止装置）</h1>
+    <p>凍ったカーブを「ESPなし」と「ESPあり」で走り比べてみましょう</p>
+  </div>
+
+  <div id="hud" class="overlay">
+    <div id="speedBox">
+      <div id="speedVal">60</div>
+      <small>km/h</small>
     </div>
-
-    <!-- Claude ビュー -->
-    <div id="claude-view" class="tab-content active">
-        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.2rem;">
-            <p>Loading Claude version...</p>
-        </div>
+    <div id="espLamp">
+      <svg viewBox="0 0 44 32">
+        <g class="lampCar" fill="none" stroke-width="2.4" stroke-linecap="round">
+          <path d="M10 14 Q13 6 22 6 Q31 6 34 14 L34 19 L10 19 Z"/>
+          <path d="M8 25 q3 -3 6 0 q3 3 6 0"/>
+          <path d="M24 25 q3 -3 6 0 q3 3 6 0"/>
+        </g>
+      </svg>
+      <span id="espLampLabel">ESP</span>
     </div>
-
-    <!-- Gemini ビュー -->
-    <div id="gemini-view" class="tab-content">
-        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; color: #e2e8f0; font-size: 1.2rem;">
-            <p>Loading Gemini version...</p>
-        </div>
+    <div id="wheelMap">
+      <svg viewBox="0 0 46 72">
+        <rect class="wm-body" x="9" y="8" width="28" height="56" rx="9"/>
+        <path d="M23 14 l-5 7 h10 z" fill="#9fb2c4"/>
+        <rect id="wm-fl" class="wm-wheel" x="2"  y="16" width="7" height="14" rx="2"/>
+        <rect id="wm-fr" class="wm-wheel" x="37" y="16" width="7" height="14" rx="2"/>
+        <rect id="wm-rl" class="wm-wheel" x="2"  y="44" width="7" height="14" rx="2"/>
+        <rect id="wm-rr" class="wm-wheel" x="37" y="44" width="7" height="14" rx="2"/>
+      </svg>
+      <small>ブレーキ作動輪</small>
     </div>
+  </div>
 
-    <script>
-        // タブ切替機能
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
+  <div id="slowTag" class="overlay">SLOW MOTION</div>
 
-        // 各ビューのコンテンツをロード（iframeを使用）
-        function loadContent(tabName) {
-            const contentDiv = document.getElementById(tabName + '-view');
-            const fileName = tabName === 'claude' ? 'index.html' : 'gemini.html';
+  <div id="caption" class="overlay"></div>
 
-            // 既にロード済みならスキップ
-            if (contentDiv.querySelector('iframe')) {
-                return;
-            }
+  <div id="viewToggle" class="overlay">
+    <button class="btn btn-sub" id="btnViewChase">🎥 追いかけ</button>
+    <button class="btn btn-sub" id="btnViewTop">🛰 真上から</button>
+  </div>
 
-            // iframeを作成して直接srcで指定
-            const iframe = document.createElement('iframe');
-            iframe.style.border = 'none';
-            iframe.style.width = '100%';
-            iframe.style.height = '100vh';
-            iframe.src = fileName;
-            
-            contentDiv.innerHTML = '';
-            contentDiv.appendChild(iframe);
+  <div id="controls" class="overlay">
+    <button class="btn btn-off" id="btnOff">▶ ESPなしで走る</button>
+    <button class="btn btn-on" id="btnOn">▶ ESPありで走る</button>
+  </div>
+
+  <div id="endPanel" class="overlay">
+    <div class="emoji" id="endEmoji"></div>
+    <h2 id="endTitle"></h2>
+    <p id="endText"></p>
+    <div class="row">
+      <button class="btn btn-sub" id="btnReplay">↺ もう一度見る</button>
+      <button class="btn btn-on" id="btnOther"></button>
+    </div>
+  </div>
+
+  <div class="scrollHint overlay">▼ スクロールでくわしい解説</div>
+</div>
+
+<!-- ============ 解説 ============ -->
+<main>
+  <section>
+    <span class="kicker">まずはここから</span>
+    <h2 class="sec">ESPってなに？</h2>
+    <p class="lead">
+      ESP（横滑り防止装置）は、<strong>雨や雪でタイヤが滑って車がスピンしそうになった瞬間</strong>に、
+      コンピューターが人間より速く気づいて、自動でブレーキをかけて車の向きを立て直してくれる装置です。
+      普段はまったく存在を感じませんが、「いざという時だけ」働く、いわば<b>見えない専属ドライバー</b>のような存在です。
+    </p>
+    <div class="nameChips">
+      <span class="chip">メーカーによって名前が違います：</span>
+      <span class="chip"><b>ESC</b>（国際的な総称）</span>
+      <span class="chip"><b>VSC</b>（トヨタ）</span>
+      <span class="chip"><b>VDC</b>（日産・スバル）</span>
+      <span class="chip"><b>DSC</b>（マツダ）</span>
+    </div>
+    <div class="noteBar">
+      💡 日本では法律で装着が義務付けられており（新型乗用車は2012年10月〜）、
+      いま販売されている新車にはほぼ必ず付いています。あなたの車にもきっと付いていますよ。
+    </div>
+  </section>
+
+  <section>
+    <span class="kicker">しくみ</span>
+    <h2 class="sec">たった3ステップで車を守る</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="num">STEP 1</span>
+        <div class="icon">👀</div>
+        <h3>ずっと見張る</h3>
+        <p>センサーが「ハンドルをどれだけ切ったか（＝行きたい方向）」と「車が実際に向いている方向」「4つのタイヤの回転」を<b>1秒間に何十回も</b>チェックしています。</p>
+      </div>
+      <div class="step">
+        <span class="num">STEP 2</span>
+        <div class="icon">🧠</div>
+        <h3>ズレに気づく</h3>
+        <p>「行きたい方向」と「実際の動き」がズレたら、それは<b>タイヤが滑っているサイン</b>。コンピューターは約0.02秒でこれを見抜きます。人間のまばたきより10倍以上速い反応です。</p>
+      </div>
+      <div class="step">
+        <span class="num">STEP 3</span>
+        <div class="icon">🛞</div>
+        <h3>1輪だけブレーキ</h3>
+        <p>4つのタイヤのうち<b>必要な1輪〜数輪だけ</b>に自動でブレーキをかけ、同時にエンジンの力も抑えます。「片方のタイヤだけブレーキ」は人間には絶対にできない技です。</p>
+      </div>
+    </div>
+    <div class="noteBar">
+      🛞 なぜ1輪だけ？ — ボートを漕ぐとき片側のオールだけ引くと船の向きが変わるのと同じ理屈で、
+      片側のタイヤだけ減速させると車の向きをクイッと修正できるのです。
+    </div>
+  </section>
+
+  <section>
+    <span class="kicker">よくある疑問</span>
+    <h2 class="sec">知っておくと安心なこと</h2>
+    <details>
+      <summary>🚨 メーターの中で車のマークがチカチカ点滅した！故障？</summary>
+      <div class="body">
+        故障ではありません。あの点滅は「<b>今まさにESPが滑りを抑えています</b>」という作動中のサインです。
+        つまり路面が滑りやすい証拠なので、スピードを落として運転しましょう。
+        逆に<b>点きっぱなし</b>の場合はシステムの異常の可能性があるので、ディーラーや整備工場で点検を受けてください。
+      </div>
+    </details>
+    <details>
+      <summary>❄️ ESPが付いていれば雪道でも絶対安全？</summary>
+      <div class="body">
+        残念ながら<b>物理の限界は超えられません</b>。ESPはタイヤのグリップを最大限に活かす装置であって、
+        グリップそのものを増やす装置ではないからです。凍結路ではスタッドレスタイヤの装着、
+        速度控えめ・車間距離たっぷりが大前提。ESPは「最後のお守り」と考えてください。
+      </div>
+    </details>
+    <details>
+      <summary>🔘 「ESP OFF」スイッチがあるのはなぜ？</summary>
+      <div class="body">
+        雪やぬかるみにはまって動けなくなった時、脱出するには<b>あえてタイヤを空転させたい</b>場面があります。
+        ESPが効いているとタイヤの空転を抑えてしまうため、一時的に切れるようになっています。
+        脱出できたら必ずONに戻しましょう。普段の走行で切るメリットはありません。
+      </div>
+    </details>
+    <details>
+      <summary>🆚 ABSとは違うの？</summary>
+      <div class="body">
+        ABSは「<b>急ブレーキのとき</b>タイヤがロックして滑るのを防ぐ」装置で、ブレーキを踏んだ時だけ働きます。
+        ESPは「<b>曲がっている時の横滑り</b>」を防ぐ装置で、ブレーキを踏んでいなくても勝手に働きます。
+        実はESPはABSの仕組みを土台にして発展した、いわば進化版なのです。
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <div class="summaryBand">
+      <p>ESPは、あなたが気づく前に滑りを見抜き、<br>人間にはできない「1輪だけブレーキ」で車を立て直す。</p>
+      <small>その効果は絶大で、単独の横滑り事故を大幅に減らすことが世界中の調査で確認されています。</small>
+      <br>
+      <a class="backBtn" href="#stage">▲ もう一度3Dで体験する</a>
+    </div>
+  </section>
+</main>
+
+<footer>この解説は一般向けにしくみを簡略化して表現しています。実際の制御はメーカー・車種により異なります。</footer>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ---------- 基本セットアップ ----------
+const stage = document.getElementById('stage');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+} catch (e) {
+  document.getElementById('webglError').style.display = 'grid';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.insertBefore(renderer.domElement, stage.firstChild);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9cc4e4);
+scene.fog = new THREE.Fog(0x9cc4e4, 70, 240);
+
+const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 500);
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+
+// ---------- ライティング ----------
+scene.add(new THREE.HemisphereLight(0xcfe4ff, 0x51704c, 0.95));
+const sun = new THREE.DirectionalLight(0xfff2d9, 1.7);
+sun.position.set(45, 70, 35);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -80; sun.shadow.camera.right = 80;
+sun.shadow.camera.top = 80; sun.shadow.camera.bottom = -80;
+sun.shadow.camera.far = 220;
+scene.add(sun);
+
+// ---------- コース（直線 → 左カーブ → 直線） ----------
+const L1 = 60, R = 25, L2 = Math.PI / 2 * R, L3 = 35;
+const TOTAL = L1 + L2 + L3;
+
+function posAt(s, out = new THREE.Vector3()) {
+  if (s < L1) return out.set(0, 0, 60 - s);
+  if (s < L1 + L2) {
+    const th = (s - L1) / R;
+    return out.set(-R + R * Math.cos(th), 0, -R * Math.sin(th));
+  }
+  const u = s - L1 - L2;
+  return out.set(-R - u, 0, -R);
+}
+function tanAt(s, out = new THREE.Vector3()) {
+  if (s < L1) return out.set(0, 0, -1);
+  if (s < L1 + L2) {
+    const th = (s - L1) / R;
+    return out.set(-Math.sin(th), 0, -Math.cos(th));
+  }
+  return out.set(-1, 0, 0);
+}
+function yawAt(s) { const t = tanAt(s); return Math.atan2(t.x, t.z); }
+
+// 地面
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(420, 420),
+  new THREE.MeshStandardMaterial({ color: 0x5e8c55, roughness: 1 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.set(-20, -0.02, 10);
+ground.receiveShadow = true;
+scene.add(ground);
+
+// 道路リボン生成（中心線からのオフセット + 幅）
+function makeRibbon(offset, width, color, y) {
+  const pts = [], idx = [];
+  const step = 1;
+  let i = 0;
+  for (let s = -10; s <= TOTAL + 10; s += step) {
+    const p = posAt(s), t = tanAt(s);
+    const left = new THREE.Vector3(t.z, 0, -t.x);
+    const c = p.clone().addScaledVector(left, offset);
+    const a = c.clone().addScaledVector(left, width / 2);
+    const b = c.clone().addScaledVector(left, -width / 2);
+    pts.push(a.x, y, a.z, b.x, y, b.z);
+    if (i > 0) {
+      const k = i * 2;
+      idx.push(k - 2, k - 1, k, k - 1, k + 1, k);
+    }
+    i++;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, roughness: 0.95 }));
+  m.receiveShadow = true;
+  return m;
+}
+scene.add(makeRibbon(0, 8, 0x3a4048, 0.0));      // 路面
+scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 左端線
+scene.add(makeRibbon(-3.6, 0.25, 0xe8e8e8, 0.012)); // 右端線
+
+// センターライン（破線）
+{
+  const dashGeo = new THREE.PlaneGeometry(0.3, 2.4);
+  const dashMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.9 });
+  for (let s = 0; s <= TOTAL; s += 5) {
+    const d = new THREE.Mesh(dashGeo, dashMat);
+    const p = posAt(s);
+    d.position.set(p.x, 0.012, p.z);
+    d.rotation.set(-Math.PI / 2, 0, -yawAt(s));
+    scene.add(d);
+  }
+}
+
+// 凍結パッチ（カーブ入口）
+{
+  const iceMat = new THREE.MeshStandardMaterial({
+    color: 0xcdeeff, roughness: 0.15, metalness: 0.1,
+    transparent: true, opacity: 0.55
+  });
+  for (let s = 56; s <= 80; s += 5) {
+    const ice = new THREE.Mesh(new THREE.CircleGeometry(4.2 + Math.sin(s) * 1.2, 24), iceMat);
+    const p = posAt(s);
+    ice.position.set(p.x + Math.sin(s * 3) * 1.2, 0.02, p.z);
+    ice.rotation.x = -Math.PI / 2;
+    scene.add(ice);
+  }
+}
+
+// 「本来の進路」ガイド（緑の破線）
+const guideLine = (() => {
+  const pts = [];
+  for (let s = 50; s <= TOTAL + 8; s += 1.5) {
+    const p = posAt(s);
+    pts.push(new THREE.Vector3(p.x, 0.06, p.z));
+  }
+  const g = new THREE.BufferGeometry().setFromPoints(pts);
+  const l = new THREE.Line(g, new THREE.LineDashedMaterial({
+    color: 0x37e07a, dashSize: 1.4, gapSize: 1.0, transparent: true, opacity: 0.85
+  }));
+  l.computeLineDistances();
+  l.visible = false;
+  scene.add(l);
+  return l;
+})();
+
+// 樹木
+{
+  const trunkG = new THREE.CylinderGeometry(0.25, 0.35, 1.6, 8);
+  const trunkM = new THREE.MeshStandardMaterial({ color: 0x6d4c33, roughness: 1 });
+  const leafG = new THREE.ConeGeometry(1.6, 3.2, 8);
+  const leafM = new THREE.MeshStandardMaterial({ color: 0x3e7a3a, roughness: 1 });
+  const spots = [
+    [10, 42], [14, 18], [11, -6], [16, -28], [-13, 38], [-14, 12],
+    [-42, -8], [-16, -40], [-52, -38], [-70, -14], [-34, -44], [8, -46], [20, 55]
+  ];
+  for (const [x, z] of spots) {
+    const tree = new THREE.Group();
+    const trunk = new THREE.Mesh(trunkG, trunkM);
+    trunk.position.y = 0.8;
+    const leaf = new THREE.Mesh(leafG, leafM);
+    leaf.position.y = 2.9;
+    trunk.castShadow = leaf.castShadow = true;
+    tree.add(trunk, leaf);
+    const sc = 0.8 + ((x * 7 + z * 13) % 10) / 14;
+    tree.scale.setScalar(sc);
+    tree.position.set(x, 0, z);
+    scene.add(tree);
+  }
+}
+
+// ---------- クルマ ----------
+// 車のローカル座標：前方 = +z。走行中のこのコースでは右側 = ローカル -x。
+function buildCar() {
+  const car = new THREE.Group();
+  const paint = new THREE.MeshStandardMaterial({ color: 0xd8402f, roughness: 0.35, metalness: 0.25 });
+  const glass = new THREE.MeshStandardMaterial({ color: 0x1c2b33, roughness: 0.15, metalness: 0.5 });
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.72, 0.55, 3.95), paint);
+  body.position.y = 0.62;
+  body.castShadow = true;
+  car.add(body);
+
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 1.9), glass);
+  cabin.position.set(0, 1.1, -0.25);
+  cabin.castShadow = true;
+  car.add(cabin);
+
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(1.56, 0.08, 1.96), paint);
+  roof.position.set(0, 1.38, -0.25);
+  car.add(roof);
+
+  const lightG = new THREE.BoxGeometry(0.34, 0.16, 0.06);
+  const headM = new THREE.MeshStandardMaterial({ color: 0xfff6cc, emissive: 0xfff0aa, emissiveIntensity: 0.9 });
+  const tailM = new THREE.MeshStandardMaterial({ color: 0x550000, emissive: 0xff2211, emissiveIntensity: 0.15 });
+  for (const sx of [-0.55, 0.55]) {
+    const h = new THREE.Mesh(lightG, headM);
+    h.position.set(sx, 0.65, 1.99);
+    car.add(h);
+    const t = new THREE.Mesh(lightG, tailM);
+    t.position.set(sx, 0.68, -1.99);
+    car.add(t);
+  }
+
+  const wheelG = new THREE.CylinderGeometry(0.34, 0.34, 0.28, 20);
+  wheelG.rotateZ(Math.PI / 2);
+  const wheelM = new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.9 });
+  const hubG = new THREE.CylinderGeometry(0.16, 0.16, 0.3, 12);
+  hubG.rotateZ(Math.PI / 2);
+  const hubM = new THREE.MeshStandardMaterial({ color: 0xb9c2cc, roughness: 0.4, metalness: 0.7 });
+
+  function wheel(x, z, steerable) {
+    const grp = new THREE.Group();          // 操舵用（y回転）
+    grp.position.set(x, 0.34, z);
+    const spin = new THREE.Group();         // 回転用（x回転）
+    const w = new THREE.Mesh(wheelG, wheelM);
+    const hub = new THREE.Mesh(hubG, hubM);
+    w.castShadow = true;
+    spin.add(w, hub);
+    grp.add(spin);
+    car.add(grp);
+    return { grp, spin, steerable, x, z };
+  }
+  const wheels = {
+    fl: wheel(0.82, 1.3, true),   // 左前（ローカル +x = このコースでは進行方向左）
+    fr: wheel(-0.82, 1.3, true),  // 右前
+    rl: wheel(0.82, -1.3, false),
+    rr: wheel(-0.82, -1.3, false),
+  };
+
+  // ブレーキ光（スプライト）
+  const glowTex = (() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
+    g.addColorStop(0, 'rgba(255,190,60,1)');
+    g.addColorStop(0.5, 'rgba(255,140,20,0.55)');
+    g.addColorStop(1, 'rgba(255,120,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  })();
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTex, transparent: true, depthWrite: false, opacity: 0
+  }));
+  glow.scale.setScalar(1.6);
+  glow.position.set(-1.05, 0.35, 1.3); // 右前輪の外側
+  car.add(glow);
+
+  return { car, wheels, glow, tailM };
+}
+const { car, wheels, glow: brakeGlow, tailM } = buildCar();
+scene.add(car);
+
+// 検知リング
+const ring = new THREE.Mesh(
+  new THREE.RingGeometry(1.0, 1.35, 40),
+  new THREE.MeshBasicMaterial({ color: 0xffb020, transparent: true, opacity: 0, side: THREE.DoubleSide })
+);
+ring.rotation.x = -Math.PI / 2;
+ring.position.y = 0.05;
+scene.add(ring);
+let ringT = -1; // 発動からの経過（負=非表示）
+
+// スキッドマーク（タイヤ痕）
+const SKID_MAX = 500;
+const skidGeo = new THREE.PlaneGeometry(0.3, 0.85);
+const skidMat = new THREE.MeshBasicMaterial({ color: 0x14161a, transparent: true, opacity: 0.5 });
+const skids = [];
+let skidIdx = 0, skidTimer = 0;
+for (let i = 0; i < SKID_MAX; i++) {
+  const m = new THREE.Mesh(skidGeo, skidMat);
+  m.rotation.x = -Math.PI / 2;
+  m.visible = false;
+  scene.add(m);
+  skids.push(m);
+}
+function dropSkid(localX, localZ) {
+  const m = skids[skidIdx % SKID_MAX];
+  skidIdx++;
+  const p = car.localToWorld(new THREE.Vector3(localX, 0, localZ));
+  m.position.set(p.x, 0.03 + (skidIdx % 20) * 0.0006, p.z);
+  m.rotation.z = -car.rotation.y;
+  m.visible = true;
+}
+function clearSkids() { skids.forEach(m => m.visible = false); skidIdx = 0; }
+
+// ---------- DOM 参照 ----------
+const $ = id => document.getElementById(id);
+const titleCard = $('titleCard'), hud = $('hud'), captionEl = $('caption'),
+  slowTag = $('slowTag'), controls = $('controls'), endPanel = $('endPanel'),
+  speedVal = $('speedVal'), espLamp = $('espLamp'), espLampLabel = $('espLampLabel'),
+  wmFR = $('wm-fr');
+
+// ---------- シナリオ状態 ----------
+const SLIP_S = 64;          // 滑り始める位置（カーブ入口の氷の上）
+const V0 = 15;              // 通常速度（表示は x4 = 60km/h）
+let mode = 'idle';          // idle | off | on
+let simS = 0;               // コース上の走行距離
+let slipDt = 0;             // 滑り始めてからの経過（シミュ秒）
+let slipped = false;
+let ended = false;
+let view = 'chase';
+let capKey = '';
+let idleAngle = 0;
+
+const slipPos = posAt(SLIP_S);
+const slipTan = tanAt(SLIP_S);
+const slipYaw = yawAt(SLIP_S);
+const outDir = new THREE.Vector3(-slipTan.z, 0, slipTan.x); // 進行方向右側（カーブ外側）
+
+function smooth(a, b, x) {
+  const t = Math.min(Math.max((x - a) / (b - a), 0), 1);
+  return t * t * (3 - 2 * t);
+}
+
+function setCaption(key, text, tone) {
+  if (capKey === key) return;
+  capKey = key;
+  captionEl.className = 'overlay show' + (tone ? ' ' + tone : '');
+  captionEl.innerHTML = text;
+}
+function hideCaption() { capKey = ''; captionEl.className = 'overlay'; }
+
+function startRun(m) {
+  mode = m;
+  simS = 0; slipDt = 0; slipped = false; ended = false;
+  ringT = -1;
+  clearSkids();
+  hideCaption();
+  car.visible = true;
+  guideLine.visible = true;
+  titleCard.classList.add('hidden');
+  hud.classList.add('show');
+  endPanel.classList.remove('show');
+  controls.querySelectorAll('.btn').forEach(b => b.disabled = true);
+  espLamp.classList.toggle('off', m === 'off');
+  espLampLabel.textContent = m === 'off' ? 'ESPなし' : 'ESP';
+  brakeGlow.material.opacity = 0;
+  tailM.emissiveIntensity = 0.15;
+  wmFR.classList.remove('braking');
+}
+
+function finishRun() {
+  ended = true;
+  controls.querySelectorAll('.btn').forEach(b => b.disabled = false);
+  const isOff = mode === 'off';
+  $('endEmoji').textContent = isOff ? '😨' : '😌';
+  $('endTitle').textContent = isOff ? 'スピンしてコースアウト…' : '何ごともなくカーブを通過！';
+  $('endText').textContent = isOff
+    ? '滑り出したらハンドルもブレーキも効きません。人間の反応では間に合わないのです。'
+    : 'ESPは滑りを0.02秒で検知し、右前のタイヤだけに自動ブレーキ。ドライバーは普通に運転していただけです。';
+  $('btnOther').textContent = isOff ? '▶ 次はESPありで走る' : '▶ ESPなしと見比べる';
+  $('btnOther').className = 'btn ' + (isOff ? 'btn-on' : 'btn-off');
+  endPanel.classList.add('show');
+}
+
+$('btnOff').addEventListener('click', () => startRun('off'));
+$('btnOn').addEventListener('click', () => startRun('on'));
+$('btnReplay').addEventListener('click', () => startRun(mode));
+$('btnOther').addEventListener('click', () => startRun(mode === 'off' ? 'on' : 'off'));
+$('btnViewChase').addEventListener('click', () => view = 'chase');
+$('btnViewTop').addEventListener('click', () => view = 'top');
+
+// ---------- カメラ ----------
+const camPos = new THREE.Vector3(30, 22, 80);
+const camLook = new THREE.Vector3(0, 0, 30);
+
+function updateCamera(dt) {
+  const target = new THREE.Vector3(), look = new THREE.Vector3();
+  if (mode === 'idle') {
+    idleAngle += dt * 0.08;
+    target.set(Math.sin(idleAngle) * 52, 24, 26 + Math.cos(idleAngle) * 52);
+    look.set(-8, 0, 14);
+  } else if (view === 'top') {
+    target.copy(car.position).add(new THREE.Vector3(0, 46, 6));
+    look.copy(car.position);
+  } else {
+    // 追いかけ：車の後方やや上
+    const yaw = slipped && mode === 'off' ? slipYaw : car.rotation.y;
+    const back = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)); // 車の後方 = -前方
+    target.copy(car.position).addScaledVector(back, -11).add(new THREE.Vector3(0, 5.2, 0));
+    look.copy(car.position).add(new THREE.Vector3(0, 1.2, 0));
+  }
+  const k = 1 - Math.exp(-3.2 * dt);
+  camPos.lerp(target, k);
+  camLook.lerp(look, k);
+  camera.position.copy(camPos);
+  camera.lookAt(camLook);
+}
+
+// ---------- メインループ ----------
+const clock = new THREE.Clock();
+let wheelRoll = 0;
+let steer = 0;
+
+function frame() {
+  requestAnimationFrame(frame);
+  const rawDt = Math.min(clock.getDelta(), 0.05);
+
+  // スローモーション判定
+  let timescale = 1;
+  if (mode === 'on' && slipped && slipDt < 2.6 && !ended) timescale = 0.35;
+  if (mode === 'off' && slipped && slipDt < 1.6 && !ended) timescale = 0.45;
+  slowTag.classList.toggle('show', timescale < 1 && !ended);
+  const dt = rawDt * timescale;
+
+  let speedKmh = 60;
+
+  if (mode !== 'idle' && !ended) {
+    if (!slipped) {
+      simS += V0 * dt;
+      if (simS >= SLIP_S) { slipped = true; simS = SLIP_S; if (mode === 'on') ringT = 0; }
+      const p = posAt(simS);
+      car.position.set(p.x, 0, p.z);
+      car.rotation.y = yawAt(simS);
+      wheelRoll += V0 * dt / 0.34;
+    } else if (mode === 'off') {
+      // ESPなし：グリップを失い直進 + スピン
+      slipDt += dt;
+      const tStop = 4.7, a = V0 / tStop;
+      const d = Math.min(slipDt, tStop);
+      const dist = V0 * d - 0.5 * a * d * d;
+      const drift = 0.9 * Math.min(slipDt, 3) ** 2;
+      car.position.copy(slipPos).addScaledVector(slipTan, dist).addScaledVector(outDir, drift);
+      const spin = 3.7 * smooth(0, 3.4, slipDt) ** 1.25;
+      car.rotation.y = slipYaw + spin;
+      speedKmh = Math.max(0, Math.round((V0 - a * d) * 4));
+      tailM.emissiveIntensity = 2.2; // ドライバーが慌ててブレーキ（でも効かない）
+      wheelRoll += Math.max(0, V0 - a * d) * dt * 0.2 / 0.34; // ほぼロック
+      if (slipDt > 0.05 && speedKmh > 2) {
+        skidTimer += dt;
+        if (skidTimer > 0.028) {
+          skidTimer = 0;
+          dropSkid(0.82, -1.3); dropSkid(-0.82, -1.3);
+          dropSkid(0.82, 1.3); dropSkid(-0.82, 1.3);
         }
+      }
+      if (slipDt > 4.6) finishRun();
+    } else {
+      // ESPあり：一瞬滑るが即修正、進路はキープ
+      slipDt += dt;
+      simS += V0 * (1 - 0.25 * smooth(0.3, 0.8, slipDt) * (1 - smooth(1.8, 2.4, slipDt))) * dt;
+      const p = posAt(simS);
+      const yawErr = 0.20 * smooth(0, 0.45, slipDt) * (1 - smooth(0.9, 2.1, slipDt));
+      const latErr = 0.7 * yawErr / 0.2;
+      car.position.copy(p).addScaledVector(outDir, slipDt < 2.5 ? latErr : 0);
+      car.rotation.y = yawAt(simS) + yawErr;
+      speedKmh = Math.round(V0 * (1 - 0.25 * smooth(0.3, 0.8, slipDt) * (1 - smooth(1.8, 2.4, slipDt))) * 4);
+      wheelRoll += V0 * dt / 0.34;
 
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tabName = button.getAttribute('data-tab');
+      // 右前輪ブレーキ（0.25〜2.3秒）
+      const braking = slipDt > 0.25 && slipDt < 2.3;
+      brakeGlow.material.opacity = braking ? 0.7 + 0.3 * Math.sin(performance.now() * 0.03) : 0;
+      wmFR.classList.toggle('braking', braking);
+      espLamp.classList.toggle('blink', slipDt < 2.6);
+      tailM.emissiveIntensity = braking ? 1.6 : 0.15;
+      if (braking) {
+        skidTimer += dt;
+        if (skidTimer > 0.03) { skidTimer = 0; dropSkid(-0.82, 1.3); }
+      }
+      if (simS > TOTAL - 2) finishRun();
+    }
+  }
 
-                // 全てのタブとコンテンツを非アクティブにする
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
+  // 検知リング
+  if (ringT >= 0) {
+    ringT += rawDt;
+    const life = 1.1;
+    if (ringT < life) {
+      ring.visible = true;
+      ring.position.x = car.position.x;
+      ring.position.z = car.position.z;
+      const k = ringT / life;
+      ring.scale.setScalar(1 + k * 3.2);
+      ring.material.opacity = 0.9 * (1 - k);
+    } else { ring.visible = false; ringT = -1; }
+  } else ring.visible = false;
 
-                // クリックされたタブをアクティブにする
-                button.classList.add('active');
-                const activeContent = document.getElementById(tabName + '-view');
-                activeContent.classList.add('active');
+  // 操舵とタイヤ回転
+  const steerTarget =
+    mode !== 'idle' && slipped && mode === 'off' ? 0.6 :
+    (simS > L1 - 6 && simS < L1 + L2 ? 0.35 : 0);
+  steer += (steerTarget - steer) * Math.min(1, 6 * rawDt);
+  for (const key of ['fl', 'fr', 'rl', 'rr']) {
+    const w = wheels[key];
+    if (w.steerable) w.grp.rotation.y = steer;
+    w.spin.rotation.x = wheelRoll;
+  }
+  if (mode === 'idle' || (mode === 'on' && !slipped)) tailM.emissiveIntensity = 0.15;
 
-                // コンテンツをロード
-                loadContent(tabName);
+  // キャプション
+  if (mode !== 'idle' && !ended) {
+    if (!slipped) {
+      if (simS < 40) setCaption('c1', '🚗 時速60kmで凍結したカーブに近づいています…');
+      else setCaption('c2', '⚠️ この先、路面が凍結！（水色の部分）');
+    } else if (mode === 'off') {
+      if (slipDt < 1.5) setCaption('o1', '❄️ タイヤが滑り出した！ハンドルを切っても曲がれない…', 'alert');
+      else if (slipDt < 3.2) setCaption('o2', '😱 ドライバーには何もできません。車はスピン…', 'alert');
+      else setCaption('o3', '💥 緑の点線＝本来の進路から大きく外れてしまいました', 'alert');
+    } else {
+      if (slipDt < 0.8) setCaption('n1', '⚡ ESPが横滑りを検知！（わずか0.02秒）', 'action');
+      else if (slipDt < 2.5) setCaption('n2', '🛞 <b>右前のタイヤだけ</b>に自動ブレーキ → 車の向きを立て直す', 'action');
+      else setCaption('n3', '✅ 進路をキープ！ドライバーは普通に運転しているだけ', 'good');
+    }
+  } else if (mode === 'idle') hideCaption();
+  if (ended) hideCaption();
 
-                // 選択状態をlocalStorageに保存
-                localStorage.setItem('activeTab', tabName);
-            });
-        });
+  speedVal.textContent = mode === 'idle' ? '60' : speedKmh;
+  if (mode !== 'on' || !slipped) espLamp.classList.remove('blink');
 
-        // ページロード時に前回選択していたタブを復元
-        window.addEventListener('load', () => {
-            const savedTab = localStorage.getItem('activeTab') || 'claude';
-            const savedButton = Array.from(tabButtons).find(btn => btn.getAttribute('data-tab') === savedTab);
-            if (savedButton) {
-                savedButton.click();
-            } else {
-                // デフォルトでClaudeを読み込む
-                const claudeButton = Array.from(tabButtons).find(btn => btn.getAttribute('data-tab') === 'claude');
-                if (claudeButton) claudeButton.click();
-            }
-        });
-    </script>
+  updateCamera(rawDt);
+  renderer.render(scene, camera);
+}
 
+// 初期配置
+{
+  const p = posAt(6);
+  car.position.set(p.x, 0, p.z);
+  car.rotation.y = yawAt(6);
+}
+resize();
+frame();
+
+// URLハッシュで自動再生（動作確認用）: #off / #on / #off:58（位置ジャンプ）
+{
+  const m = location.hash.match(/^#(off|on)(?::(\d+))?$/);
+  if (m) {
+    startRun(m[1]);
+    if (m[2]) simS = Math.min(Number(m[2]), SLIP_S - 0.5);
+  }
+}
+</script>
 </body>
 </html>
