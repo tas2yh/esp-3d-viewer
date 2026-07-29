@@ -118,7 +118,7 @@
         // 各ビューのコンテンツをロード（iframeを使用）
         function loadContent(tabName) {
             const contentDiv = document.getElementById(tabName + '-view');
-            const fileName = tabName === 'claude' ? 'index.html' : 'gemini.html';
+            const fileName = tabName === 'claude' ? 'claude.html' : 'gemini.html';
 
             // 既にロード済みならスキップ
             if (contentDiv.querySelector('iframe')) {
