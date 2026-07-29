@@ -29,23 +29,19 @@
             padding-bottom: 56.25%; /* 16:9の比率 */
             height: 0;
             overflow: hidden;
-            background-color: #ddd;
+            background-color: #000;
             border-radius: 8px;
             margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
-        .video-placeholder-text {
+        .video-container video {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #555;
-            font-size: 1.2em;
-            text-align: center;
-            font-weight: bold;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            object-fit: cover;
         }
         .explanation {
             background: white;
@@ -69,12 +65,12 @@
 
     <h1>ESPって何？ - クルマの安全を守る見えないヒーロー</h1>
     
-    <!-- 3D動画埋め込み用エリア -->
+    <!-- 3D動画埋め込みエリア -->
     <div class="video-container">
-        <div class="video-placeholder-text">
-            🎥 ここにESPの働きを解説する3D動画が入ります<br>
-            <span style="font-size: 0.8em; font-weight: normal;">（※車が滑りそうになった時に、自動で姿勢を直すアニメーション）</span>
-        </div>
+        <video controls autoplay loop muted playsinline>
+            <source src="video_1785301334790195.mp4" type="video/mp4">
+            お使いのブラウザは動画再生に対応していません。
+        </video>
     </div>
 
     <div class="explanation">
