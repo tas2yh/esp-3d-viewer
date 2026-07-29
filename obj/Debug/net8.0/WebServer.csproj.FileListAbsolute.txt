@@ -1,0 +1,15 @@
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.AssemblyInfoInputs.cache
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.AssemblyInfo.cs
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.csproj.CoreCompileInputs.cache
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.sourcelink.json
+C:\workspace\esp-3d\bin\Debug\net8.0\WebServer.exe
+C:\workspace\esp-3d\bin\Debug\net8.0\WebServer.deps.json
+C:\workspace\esp-3d\bin\Debug\net8.0\WebServer.runtimeconfig.json
+C:\workspace\esp-3d\bin\Debug\net8.0\WebServer.dll
+C:\workspace\esp-3d\bin\Debug\net8.0\WebServer.pdb
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.dll
+C:\workspace\esp-3d\obj\Debug\net8.0\refint\WebServer.dll
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.pdb
+C:\workspace\esp-3d\obj\Debug\net8.0\WebServer.genruntimeconfig.cache
+C:\workspace\esp-3d\obj\Debug\net8.0\ref\WebServer.dll

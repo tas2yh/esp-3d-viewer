@@ -1,18 +1,15 @@
 ﻿<!DOCTYPE html>
-<html lang="ja">
+<html lang='ja'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP 3D 繧ｷ繝溘Η繝ｬ繝ｼ繧ｿ繝ｼ - 隍・焚繝薙Η繝ｼ</title>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>ESP 3D シミュレーター - 複数ビュー</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Noto Sans JP', sans-serif;
             background: #0f172a;
         }
-
-        /* ===== 繧ｿ繝悶・繝・ム繝ｼ ===== */
         .tabs-header {
             display: flex;
             background: #0f172a;
@@ -23,7 +20,6 @@
             z-index: 100;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
-
         .tab-button {
             padding: 16px 24px;
             cursor: pointer;
@@ -37,134 +33,74 @@
             margin-bottom: -2px;
             white-space: nowrap;
         }
-
         .tab-button:hover {
             color: #cbd5e1;
             background: #1e293b;
         }
-
         .tab-button.active {
             color: #3b82f6;
             border-bottom-color: #3b82f6;
         }
-
-        .tab-content {
-            display: none;
-        }
-
+        .tab-content { display: none; }
         .tab-content.active {
             display: block;
             animation: fadeIn 0.3s ease-in;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        /* Claude 繝薙Η繝ｼ */
-        #claude-view {
-            background: #f5f7fa;
-            color: #22303c;
-            min-height: 100vh;
-        }
-
-        /* Gemini 繝薙Η繝ｼ */
-        #gemini-view {
-            background: #0f172a;
-            color: #e2e8f0;
-            min-height: 100vh;
-        }
-
-        /* 蜈・・繧ｹ繧ｿ繧､繝ｫ縺ｯiframe縺ｧ菫晄戟 */
-        iframe {
-            width: 100%;
-            height: 100vh;
-            border: none;
-        }
+        #claude-view { background: #f5f7fa; color: #22303c; min-height: 100vh; }
+        #gemini-view { background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        iframe { width: 100%; height: 100vh; border: none; }
     </style>
 </head>
 <body>
-
-    <!-- 繧ｿ繝悶リ繝薙ご繝ｼ繧ｷ繝ｧ繝ｳ -->
-    <div class="tabs-header">
-        <button class="tab-button active" data-tab="claude">
-            ､・Claude - Original
-        </button>
-        <button class="tab-button" data-tab="gemini">
-            笨ｨ Gemini Enterprise
-        </button>
+    <div class='tabs-header'>
+        <button class='tab-button active' data-tab='claude'>🤖 Claude - Original</button>
+        <button class='tab-button' data-tab='gemini'>✨ Gemini Enterprise</button>
     </div>
-
-    <!-- Claude 繝薙Η繝ｼ -->
-    <div id="claude-view" class="tab-content active">
-        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.2rem;">
+    <div id='claude-view' class='tab-content active'>
+        <div style='display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.2rem;'>
             <p>Loading Claude version...</p>
         </div>
     </div>
-
-    <!-- Gemini 繝薙Η繝ｼ -->
-    <div id="gemini-view" class="tab-content">
-        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; color: #e2e8f0; font-size: 1.2rem;">
+    <div id='gemini-view' class='tab-content'>
+        <div style='display: flex; align-items: center; justify-content: center; height: 100vh; color: #e2e8f0; font-size: 1.2rem;'>
             <p>Loading Gemini version...</p>
         </div>
     </div>
-
     <script>
-        // 繧ｿ繝門・譖ｿ讖溯・
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
-
-        // 蜷・ン繝･繝ｼ縺ｮ繧ｳ繝ｳ繝・Φ繝・ｒ繝ｭ繝ｼ繝会ｼ・frame繧剃ｽｿ逕ｨ・・        function loadContent(tabName) {
+        function loadContent(tabName) {
             const contentDiv = document.getElementById(tabName + '-view');
-            const fileName = tabName === 'claude' ? 'index.html' : 'gemini.html';
-
-            // 譌｢縺ｫ繝ｭ繝ｼ繝画ｸ医∩縺ｪ繧峨せ繧ｭ繝・・
-            if (contentDiv.querySelector('iframe')) {
-                return;
-            }
-
-            // iframe繧剃ｽ懈・縺励※逶ｴ謗･src縺ｧ謖・ｮ・            const iframe = document.createElement('iframe');
+            const fileName = tabName === 'claude' ? 'claude.html' : 'gemini.html';
+            if (contentDiv.querySelector('iframe')) return;
+            const iframe = document.createElement('iframe');
             iframe.style.border = 'none';
             iframe.style.width = '100%';
             iframe.style.height = '100vh';
             iframe.src = fileName;
-            
             contentDiv.innerHTML = '';
             contentDiv.appendChild(iframe);
         }
-
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const tabName = button.getAttribute('data-tab');
-
-                // 蜈ｨ縺ｦ縺ｮ繧ｿ繝悶→繧ｳ繝ｳ繝・Φ繝・ｒ髱槭い繧ｯ繝・ぅ繝悶↓縺吶ｋ
                 tabButtons.forEach(btn => btn.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
-
-                // 繧ｯ繝ｪ繝・け縺輔ｌ縺溘ち繝悶ｒ繧｢繧ｯ繝・ぅ繝悶↓縺吶ｋ
                 button.classList.add('active');
-                const activeContent = document.getElementById(tabName + '-view');
-                activeContent.classList.add('active');
-
-                // 繧ｳ繝ｳ繝・Φ繝・ｒ繝ｭ繝ｼ繝・                loadContent(tabName);
-
-                // 驕ｸ謚樒憾諷九ｒlocalStorage縺ｫ菫晏ｭ・                localStorage.setItem('activeTab', tabName);
+                document.getElementById(tabName + '-view').classList.add('active');
+                loadContent(tabName);
+                localStorage.setItem('activeTab', tabName);
             });
         });
-
-        // 繝壹・繧ｸ繝ｭ繝ｼ繝画凾縺ｫ蜑榊屓驕ｸ謚槭＠縺ｦ縺・◆繧ｿ繝悶ｒ蠕ｩ蜈・        window.addEventListener('load', () => {
+        window.addEventListener('load', () => {
             const savedTab = localStorage.getItem('activeTab') || 'claude';
             const savedButton = Array.from(tabButtons).find(btn => btn.getAttribute('data-tab') === savedTab);
-            if (savedButton) {
-                savedButton.click();
-            } else {
-                // 繝・ヵ繧ｩ繝ｫ繝医〒Claude繧定ｪｭ縺ｿ霎ｼ繧
-                const claudeButton = Array.from(tabButtons).find(btn => btn.getAttribute('data-tab') === 'claude');
-                if (claudeButton) claudeButton.click();
-            }
+            if (savedButton) savedButton.click();
         });
     </script>
-
 </body>
 </html>
