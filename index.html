@@ -52,13 +52,15 @@
         }
         #claude-view { background: #f5f7fa; color: #22303c; min-height: 100vh; }
         #gemini-view { background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        #geminipro-view { background: #0f172a; color: #e2e8f0; min-height: 100vh; }
         iframe { width: 100%; height: 100vh; border: none; }
     </style>
 </head>
 <body>
     <div class='tabs-header'>
-        <button class='tab-button active' data-tab='claude'>🤖 Claude - Original</button>
-        <button class='tab-button' data-tab='gemini'>✨ Gemini Enterprise</button>
+        <button class='tab-button active' data-tab='claude'>🤖 Claude</button>
+        <button class='tab-button' data-tab='gemini'>✨ Gemini flash Ent.</button>
+        <button class='tab-button' data-tab='geminipro'>🚀 Gemini pro Ent.</button>
     </div>
     <div id='claude-view' class='tab-content active'>
         <div style='display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.2rem;'>
@@ -67,7 +69,12 @@
     </div>
     <div id='gemini-view' class='tab-content'>
         <div style='display: flex; align-items: center; justify-content: center; height: 100vh; color: #e2e8f0; font-size: 1.2rem;'>
-            <p>Loading Gemini version...</p>
+            <p>Loading Gemini flash version...</p>
+        </div>
+    </div>
+    <div id='geminipro-view' class='tab-content'>
+        <div style='display: flex; align-items: center; justify-content: center; height: 100vh; color: #e2e8f0; font-size: 1.2rem;'>
+            <p>Loading Gemini pro version...</p>
         </div>
     </div>
     <script>
@@ -75,7 +82,8 @@
         const tabContents = document.querySelectorAll('.tab-content');
         function loadContent(tabName) {
             const contentDiv = document.getElementById(tabName + '-view');
-            const fileName = tabName === 'claude' ? 'claude.html' : 'gemini.html';
+            const fileMap = { claude: 'claude.html', gemini: 'gemini.html', geminipro: 'geminipro.html' };
+            const fileName = fileMap[tabName];
             if (contentDiv.querySelector('iframe')) return;
             const iframe = document.createElement('iframe');
             iframe.style.border = 'none';
