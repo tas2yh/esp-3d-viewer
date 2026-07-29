@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESP縺｣縺ｦ縺ｪ縺ｫ・・窶・3D縺ｧ繧上°繧区ｨｪ貊代ｊ髦ｲ豁｢陬・ｽｮ</title>
+<title>ESPってなに？ — 3Dでわかる横滑り防止装置</title>
 <style>
   :root {
     --bg-dark: #0d1420;
@@ -23,7 +23,7 @@
     line-height: 1.75;
   }
 
-  /* ===== 3D繧ｹ繝・・繧ｸ ===== */
+  /* ===== 3Dステージ ===== */
   #stage {
     position: relative;
     width: 100%;
@@ -52,7 +52,7 @@
   #titleCard .esp { color: var(--accent); }
   #titleCard.hidden { opacity: 0; }
 
-  /* HUD・亥ｷｦ荳奇ｼ・*/
+  /* HUD（左上） */
   #hud {
     top: 14px; left: 14px;
     background: rgba(10, 18, 30, .72);
@@ -84,7 +84,7 @@
   #espLamp.off { opacity: .45; }
   @keyframes lampBlink { 50% { opacity: .25; } }
 
-  /* 霆願ｼｪ繝溘ル蝗ｳ */
+  /* 車輪ミニ図 */
   #wheelMap { text-align: center; }
   #wheelMap svg { width: 46px; height: 72px; display: block; margin: 0 auto; }
   #wheelMap small { font-size: .6rem; opacity: .75; display: block; margin-top: 2px; }
@@ -93,7 +93,7 @@
   .wm-wheel.braking { fill: var(--warn); animation: wheelPulse .4s ease-in-out infinite alternate; }
   @keyframes wheelPulse { to { fill: #ffd27a; } }
 
-  /* 繧ｭ繝｣繝励す繝ｧ繝ｳ */
+  /* キャプション */
   #caption {
     bottom: 108px;
     left: 50%;
@@ -117,7 +117,7 @@
   #caption.action { border-color: var(--warn); color: #ffe9c9; }
   #caption.good { border-color: var(--ok); color: #d5f7e1; }
 
-  /* 繧ｹ繝ｭ繝ｼ繝｢繝ｼ繧ｷ繝ｧ繝ｳ陦ｨ遉ｺ */
+  /* スローモーション表示 */
   #slowTag {
     top: 16px; left: 50%; transform: translateX(-50%);
     color: var(--warn);
@@ -134,7 +134,7 @@
   }
   #slowTag.show { opacity: 1; animation: lampBlink 1s steps(2) infinite; }
 
-  /* 謫堺ｽ懊・繧ｿ繝ｳ */
+  /* 操作ボタン */
   #controls {
     bottom: 24px;
     left: 50%;
@@ -172,7 +172,7 @@
 
   #viewToggle { top: 14px; right: 14px; display: flex; gap: 8px; }
 
-  /* 邨先棡繝代ロ繝ｫ */
+  /* 結果パネル */
   #endPanel {
     top: 50%; left: 50%;
     transform: translate(-50%, -50%) scale(.94);
@@ -212,7 +212,7 @@
     pointer-events: none;
   }
 
-  /* ===== 隗｣隱ｬ繧ｻ繧ｯ繧ｷ繝ｧ繝ｳ ===== */
+  /* ===== 解説セクション ===== */
   main { max-width: 900px; margin: 0 auto; padding: 56px 20px 24px; }
   section { margin-bottom: 64px; }
   .kicker {
@@ -291,7 +291,7 @@
     gap: 10px;
   }
   summary::-webkit-details-marker { display: none; }
-  summary::before { content: "笆ｸ"; color: var(--accent); transition: transform .2s; }
+  summary::before { content: "▸"; color: var(--accent); transition: transform .2s; }
   details[open] summary::before { transform: rotate(90deg); }
   details .body { padding: 0 20px 18px 42px; font-size: .92rem; color: #40505f; }
 
@@ -328,16 +328,16 @@
 </head>
 <body>
 
-<!-- ============ 3D菴馴ｨ薙せ繝・・繧ｸ ============ -->
+<!-- ============ 3D体験ステージ ============ -->
 <div id="stage">
   <div id="webglError">
-    <p>縺贋ｽｿ縺・・繝悶Λ繧ｦ繧ｶ縺ｧ縺ｯ3D陦ｨ遉ｺ・・ebGL・峨ｒ蛻ｩ逕ｨ縺ｧ縺阪∪縺帙ｓ縺ｧ縺励◆縲・br>
-    荳九↓繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺吶ｋ縺ｨ譁・ｫ縺ｧ縺ｮ隗｣隱ｬ繧偵＃隕ｧ縺・◆縺縺代∪縺吶・/p>
+    <p>お使いのブラウザでは3D表示（WebGL）を利用できませんでした。<br>
+    下にスクロールすると文章での解説をご覧いただけます。</p>
   </div>
 
   <div id="titleCard" class="overlay">
-    <h1>繧ゅ＠繧ゅ・譎ゅ√け繝ｫ繝槭′閾ｪ蛻・〒遶九※逶ｴ縺吶・br><span class="esp">ESP</span>・域ｨｪ貊代ｊ髦ｲ豁｢陬・ｽｮ・・/h1>
-    <p>蜃阪▲縺溘き繝ｼ繝悶ｒ縲窪SP縺ｪ縺励阪→縲窪SP縺ゅｊ縲阪〒襍ｰ繧頑ｯ斐∋縺ｦ縺ｿ縺ｾ縺励ｇ縺・/p>
+    <h1>もしもの時、クルマが自分で立て直す。<br><span class="esp">ESP</span>（横滑り防止装置）</h1>
+    <p>凍ったカーブを「ESPなし」と「ESPあり」で走り比べてみましょう</p>
   </div>
 
   <div id="hud" class="overlay">
@@ -364,7 +364,7 @@
         <rect id="wm-rl" class="wm-wheel" x="2"  y="44" width="7" height="14" rx="2"/>
         <rect id="wm-rr" class="wm-wheel" x="37" y="44" width="7" height="14" rx="2"/>
       </svg>
-      <small>繝悶Ξ繝ｼ繧ｭ菴懷虚霈ｪ</small>
+      <small>ブレーキ作動輪</small>
     </div>
   </div>
 
@@ -373,13 +373,13 @@
   <div id="caption" class="overlay"></div>
 
   <div id="viewToggle" class="overlay">
-    <button class="btn btn-sub" id="btnViewChase">磁 霑ｽ縺・°縺・/button>
-    <button class="btn btn-sub" id="btnViewTop">峅 逵滉ｸ翫°繧・/button>
+    <button class="btn btn-sub" id="btnViewChase">🎥 追いかけ</button>
+    <button class="btn btn-sub" id="btnViewTop">🛰 真上から</button>
   </div>
 
   <div id="controls" class="overlay">
-    <button class="btn btn-off" id="btnOff">笆ｶ ESP縺ｪ縺励〒襍ｰ繧・/button>
-    <button class="btn btn-on" id="btnOn">笆ｶ ESP縺ゅｊ縺ｧ襍ｰ繧・/button>
+    <button class="btn btn-off" id="btnOff">▶ ESPなしで走る</button>
+    <button class="btn btn-on" id="btnOn">▶ ESPありで走る</button>
   </div>
 
   <div id="endPanel" class="overlay">
@@ -387,95 +387,114 @@
     <h2 id="endTitle"></h2>
     <p id="endText"></p>
     <div class="row">
-      <button class="btn btn-sub" id="btnReplay">竊ｺ 繧ゅ≧荳蠎ｦ隕九ｋ</button>
+      <button class="btn btn-sub" id="btnReplay">↺ もう一度見る</button>
       <button class="btn btn-on" id="btnOther"></button>
     </div>
   </div>
 
-  <div class="scrollHint overlay">笆ｼ 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｧ縺上ｏ縺励＞隗｣隱ｬ</div>
+  <div class="scrollHint overlay">▼ スクロールでくわしい解説</div>
 </div>
 
-<!-- ============ 隗｣隱ｬ ============ -->
+<!-- ============ 解説 ============ -->
 <main>
   <section>
-    <span class="kicker">縺ｾ縺壹・縺薙％縺九ｉ</span>
-    <h2 class="sec">ESP縺｣縺ｦ縺ｪ縺ｫ・・/h2>
+    <span class="kicker">まずはここから</span>
+    <h2 class="sec">ESPってなに？</h2>
     <p class="lead">
-      ESP・域ｨｪ貊代ｊ髦ｲ豁｢陬・ｽｮ・峨・縲・strong>髮ｨ繧・妛縺ｧ繧ｿ繧､繝､縺梧ｻ代▲縺ｦ霆翫′繧ｹ繝斐Φ縺励◎縺・↓縺ｪ縺｣縺溽椪髢・/strong>縺ｫ縲・      繧ｳ繝ｳ繝斐Η繝ｼ繧ｿ繝ｼ縺御ｺｺ髢薙ｈ繧企溘￥豌励▼縺・※縲∬・蜍輔〒繝悶Ξ繝ｼ繧ｭ繧偵°縺代※霆翫・蜷代″繧堤ｫ九※逶ｴ縺励※縺上ｌ繧玖｣・ｽｮ縺ｧ縺吶・      譎ｮ谿ｵ縺ｯ縺ｾ縺｣縺溘￥蟄伜惠繧呈─縺倥∪縺帙ｓ縺後√後＞縺悶→縺・≧譎ゅ□縺代榊ロ縺上√＞繧上・<b>隕九∴縺ｪ縺・ｰょｱ槭ラ繝ｩ繧､繝舌・</b>縺ｮ繧医≧縺ｪ蟄伜惠縺ｧ縺吶・    </p>
+      ESP（横滑り防止装置）は、<strong>雨や雪でタイヤが滑って車がスピンしそうになった瞬間</strong>に、
+      コンピューターが人間より速く気づいて、自動でブレーキをかけて車の向きを立て直してくれる装置です。
+      普段はまったく存在を感じませんが、「いざという時だけ」働く、いわば<b>見えない専属ドライバー</b>のような存在です。
+    </p>
     <div class="nameChips">
-      <span class="chip">繝｡繝ｼ繧ｫ繝ｼ縺ｫ繧医▲縺ｦ蜷榊燕縺碁＆縺・∪縺呻ｼ・/span>
-      <span class="chip"><b>ESC</b>・亥嵜髫帷噪縺ｪ邱冗ｧｰ・・/span>
-      <span class="chip"><b>VSC</b>・医ヨ繝ｨ繧ｿ・・/span>
-      <span class="chip"><b>VDC</b>・域律逕｣繝ｻ繧ｹ繝舌Ν・・/span>
-      <span class="chip"><b>DSC</b>・医・繝・ム・・/span>
+      <span class="chip">メーカーによって名前が違います：</span>
+      <span class="chip"><b>ESC</b>（国際的な総称）</span>
+      <span class="chip"><b>VSC</b>（トヨタ）</span>
+      <span class="chip"><b>VDC</b>（日産・スバル）</span>
+      <span class="chip"><b>DSC</b>（マツダ）</span>
     </div>
     <div class="noteBar">
-      庁 譌･譛ｬ縺ｧ縺ｯ豕募ｾ九〒陬・捩縺檎ｾｩ蜍吩ｻ倥￠繧峨ｌ縺ｦ縺翫ｊ・域眠蝙倶ｹ礼畑霆翫・2012蟷ｴ10譛医懶ｼ峨・      縺・∪雋ｩ螢ｲ縺輔ｌ縺ｦ縺・ｋ譁ｰ霆翫↓縺ｯ縺ｻ縺ｼ蠢・★莉倥＞縺ｦ縺・∪縺吶ゅ≠縺ｪ縺溘・霆翫↓繧ゅ″縺｣縺ｨ莉倥＞縺ｦ縺・∪縺吶ｈ縲・    </div>
+      💡 日本では法律で装着が義務付けられており（新型乗用車は2012年10月〜）、
+      いま販売されている新車にはほぼ必ず付いています。あなたの車にもきっと付いていますよ。
+    </div>
   </section>
 
   <section>
-    <span class="kicker">縺励￥縺ｿ</span>
-    <h2 class="sec">縺溘▲縺・繧ｹ繝・ャ繝励〒霆翫ｒ螳医ｋ</h2>
+    <span class="kicker">しくみ</span>
+    <h2 class="sec">たった3ステップで車を守る</h2>
     <div class="steps">
       <div class="step">
         <span class="num">STEP 1</span>
-        <div class="icon">操</div>
-        <h3>縺壹▲縺ｨ隕句ｼｵ繧・/h3>
-        <p>繧ｻ繝ｳ繧ｵ繝ｼ縺後後ワ繝ｳ繝峨Ν繧偵←繧後□縺大・縺｣縺溘°・茨ｼ晁｡後″縺溘＞譁ｹ蜷托ｼ峨阪→縲瑚ｻ翫′螳滄圀縺ｫ蜷代＞縺ｦ縺・ｋ譁ｹ蜷代阪・縺､縺ｮ繧ｿ繧､繝､縺ｮ蝗櫁ｻ｢縲阪ｒ<b>1遘帝俣縺ｫ菴募香蝗槭ｂ</b>繝√ぉ繝・け縺励※縺・∪縺吶・/p>
+        <div class="icon">👀</div>
+        <h3>ずっと見張る</h3>
+        <p>センサーが「ハンドルをどれだけ切ったか（＝行きたい方向）」と「車が実際に向いている方向」「4つのタイヤの回転」を<b>1秒間に何十回も</b>チェックしています。</p>
       </div>
       <div class="step">
         <span class="num">STEP 2</span>
-        <div class="icon">ｧ</div>
-        <h3>繧ｺ繝ｬ縺ｫ豌励▼縺・/h3>
-        <p>縲瑚｡後″縺溘＞譁ｹ蜷代阪→縲悟ｮ滄圀縺ｮ蜍輔″縲阪′繧ｺ繝ｬ縺溘ｉ縲√◎繧後・<b>繧ｿ繧､繝､縺梧ｻ代▲縺ｦ縺・ｋ繧ｵ繧､繝ｳ</b>縲ゅさ繝ｳ繝斐Η繝ｼ繧ｿ繝ｼ縺ｯ邏・.02遘偵〒縺薙ｌ繧定ｦ区栢縺阪∪縺吶ゆｺｺ髢薙・縺ｾ縺ｰ縺溘″繧医ｊ10蛟堺ｻ･荳企溘＞蜿榊ｿ懊〒縺吶・/p>
+        <div class="icon">🧠</div>
+        <h3>ズレに気づく</h3>
+        <p>「行きたい方向」と「実際の動き」がズレたら、それは<b>タイヤが滑っているサイン</b>。コンピューターは約0.02秒でこれを見抜きます。人間のまばたきより10倍以上速い反応です。</p>
       </div>
       <div class="step">
         <span class="num">STEP 3</span>
-        <div class="icon">屓</div>
-        <h3>1霈ｪ縺縺代ヶ繝ｬ繝ｼ繧ｭ</h3>
-        <p>4縺､縺ｮ繧ｿ繧､繝､縺ｮ縺・■<b>蠢・ｦ√↑1霈ｪ縲懈焚霈ｪ縺縺・/b>縺ｫ閾ｪ蜍輔〒繝悶Ξ繝ｼ繧ｭ繧偵°縺代∝酔譎ゅ↓繧ｨ繝ｳ繧ｸ繝ｳ縺ｮ蜉帙ｂ謚代∴縺ｾ縺吶ゅ檎援譁ｹ縺ｮ繧ｿ繧､繝､縺縺代ヶ繝ｬ繝ｼ繧ｭ縲阪・莠ｺ髢薙↓縺ｯ邨ｶ蟇ｾ縺ｫ縺ｧ縺阪↑縺・橿縺ｧ縺吶・/p>
+        <div class="icon">🛞</div>
+        <h3>1輪だけブレーキ</h3>
+        <p>4つのタイヤのうち<b>必要な1輪〜数輪だけ</b>に自動でブレーキをかけ、同時にエンジンの力も抑えます。「片方のタイヤだけブレーキ」は人間には絶対にできない技です。</p>
       </div>
     </div>
     <div class="noteBar">
-      屓 縺ｪ縺・霈ｪ縺縺托ｼ・窶・繝懊・繝医ｒ貍輔＄縺ｨ縺咲援蛛ｴ縺ｮ繧ｪ繝ｼ繝ｫ縺縺大ｼ輔￥縺ｨ闊ｹ縺ｮ蜷代″縺悟､峨ｏ繧九・縺ｨ蜷後§逅・ｱ医〒縲・      迚・・縺ｮ繧ｿ繧､繝､縺縺第ｸ幃溘＆縺帙ｋ縺ｨ霆翫・蜷代″繧偵け繧､繝・→菫ｮ豁｣縺ｧ縺阪ｋ縺ｮ縺ｧ縺吶・    </div>
+      🛞 なぜ1輪だけ？ — ボートを漕ぐとき片側のオールだけ引くと船の向きが変わるのと同じ理屈で、
+      片側のタイヤだけ減速させると車の向きをクイッと修正できるのです。
+    </div>
   </section>
 
   <section>
-    <span class="kicker">繧医￥縺ゅｋ逍大撫</span>
-    <h2 class="sec">遏･縺｣縺ｦ縺翫￥縺ｨ螳牙ｿ・↑縺薙→</h2>
+    <span class="kicker">よくある疑問</span>
+    <h2 class="sec">知っておくと安心なこと</h2>
     <details>
-      <summary>圷 繝｡繝ｼ繧ｿ繝ｼ縺ｮ荳ｭ縺ｧ霆翫・繝槭・繧ｯ縺後メ繧ｫ繝√き轤ｹ貊・＠縺滂ｼ∵腐髫懶ｼ・/summary>
+      <summary>🚨 メーターの中で車のマークがチカチカ点滅した！故障？</summary>
       <div class="body">
-        謨・囿縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲ゅ≠縺ｮ轤ｹ貊・・縲・b>莉翫∪縺輔↓ESP縺梧ｻ代ｊ繧呈椛縺医※縺・∪縺・/b>縲阪→縺・≧菴懷虚荳ｭ縺ｮ繧ｵ繧､繝ｳ縺ｧ縺吶・        縺､縺ｾ繧願ｷｯ髱｢縺梧ｻ代ｊ繧・☆縺・ｨｼ諡縺ｪ縺ｮ縺ｧ縲√せ繝斐・繝峨ｒ關ｽ縺ｨ縺励※驕玖ｻ｢縺励∪縺励ｇ縺・・        騾・↓<b>轤ｹ縺阪▲縺ｱ縺ｪ縺・/b>縺ｮ蝣ｴ蜷医・繧ｷ繧ｹ繝・Β縺ｮ逡ｰ蟶ｸ縺ｮ蜿ｯ閭ｽ諤ｧ縺後≠繧九・縺ｧ縲√ョ繧｣繝ｼ繝ｩ繝ｼ繧・紛蛯吝ｷ･蝣ｴ縺ｧ轤ｹ讀懊ｒ蜿励￠縺ｦ縺上□縺輔＞縲・      </div>
+        故障ではありません。あの点滅は「<b>今まさにESPが滑りを抑えています</b>」という作動中のサインです。
+        つまり路面が滑りやすい証拠なので、スピードを落として運転しましょう。
+        逆に<b>点きっぱなし</b>の場合はシステムの異常の可能性があるので、ディーラーや整備工場で点検を受けてください。
+      </div>
     </details>
     <details>
-      <summary>笶・ｸ・ESP縺御ｻ倥＞縺ｦ縺・ｌ縺ｰ髮ｪ驕薙〒繧らｵｶ蟇ｾ螳牙・・・/summary>
+      <summary>❄️ ESPが付いていれば雪道でも絶対安全？</summary>
       <div class="body">
-        谿句ｿｵ縺ｪ縺後ｉ<b>迚ｩ逅・・髯千阜縺ｯ雜・∴繧峨ｌ縺ｾ縺帙ｓ</b>縲・SP縺ｯ繧ｿ繧､繝､縺ｮ繧ｰ繝ｪ繝・・繧呈怙螟ｧ髯舌↓豢ｻ縺九☆陬・ｽｮ縺ｧ縺ゅ▲縺ｦ縲・        繧ｰ繝ｪ繝・・縺昴・繧ゅ・繧貞｢励ｄ縺呵｣・ｽｮ縺ｧ縺ｯ縺ｪ縺・°繧峨〒縺吶ょ㍾邨占ｷｯ縺ｧ縺ｯ繧ｹ繧ｿ繝・ラ繝ｬ繧ｹ繧ｿ繧､繝､縺ｮ陬・捩縲・        騾溷ｺｦ謗ｧ縺医ａ繝ｻ霆企俣霍晞屬縺溘▲縺ｷ繧翫′螟ｧ蜑肴署縲・SP縺ｯ縲梧怙蠕後・縺雁ｮ医ｊ縲阪→閠・∴縺ｦ縺上□縺輔＞縲・      </div>
+        残念ながら<b>物理の限界は超えられません</b>。ESPはタイヤのグリップを最大限に活かす装置であって、
+        グリップそのものを増やす装置ではないからです。凍結路ではスタッドレスタイヤの装着、
+        速度控えめ・車間距離たっぷりが大前提。ESPは「最後のお守り」と考えてください。
+      </div>
     </details>
     <details>
-      <summary>曝 縲窪SP OFF縲阪せ繧､繝・メ縺後≠繧九・縺ｯ縺ｪ縺懶ｼ・/summary>
+      <summary>🔘 「ESP OFF」スイッチがあるのはなぜ？</summary>
       <div class="body">
-        髮ｪ繧・〓縺九ｋ縺ｿ縺ｫ縺ｯ縺ｾ縺｣縺ｦ蜍輔￠縺ｪ縺上↑縺｣縺滓凾縲∬┳蜃ｺ縺吶ｋ縺ｫ縺ｯ<b>縺ゅ∴縺ｦ繧ｿ繧､繝､繧堤ｩｺ霆｢縺輔○縺溘＞</b>蝣ｴ髱｢縺後≠繧翫∪縺吶・        ESP縺悟柑縺・※縺・ｋ縺ｨ繧ｿ繧､繝､縺ｮ遨ｺ霆｢繧呈椛縺医※縺励∪縺・◆繧√∽ｸ譎ら噪縺ｫ蛻・ｌ繧九ｈ縺・↓縺ｪ縺｣縺ｦ縺・∪縺吶・        閼ｱ蜃ｺ縺ｧ縺阪◆繧牙ｿ・★ON縺ｫ謌ｻ縺励∪縺励ｇ縺・よ勸谿ｵ縺ｮ襍ｰ陦後〒蛻・ｋ繝｡繝ｪ繝・ヨ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・      </div>
+        雪やぬかるみにはまって動けなくなった時、脱出するには<b>あえてタイヤを空転させたい</b>場面があります。
+        ESPが効いているとタイヤの空転を抑えてしまうため、一時的に切れるようになっています。
+        脱出できたら必ずONに戻しましょう。普段の走行で切るメリットはありません。
+      </div>
     </details>
     <details>
-      <summary>・ ABS縺ｨ縺ｯ驕輔≧縺ｮ・・/summary>
+      <summary>🆚 ABSとは違うの？</summary>
       <div class="body">
-        ABS縺ｯ縲・b>諤･繝悶Ξ繝ｼ繧ｭ縺ｮ縺ｨ縺・/b>繧ｿ繧､繝､縺後Ο繝・け縺励※貊代ｋ縺ｮ繧帝亟縺舌崎｣・ｽｮ縺ｧ縲√ヶ繝ｬ繝ｼ繧ｭ繧定ｸ上ｓ縺譎ゅ□縺大ロ縺阪∪縺吶・        ESP縺ｯ縲・b>譖ｲ縺後▲縺ｦ縺・ｋ譎ゅ・讓ｪ貊代ｊ</b>縲阪ｒ髦ｲ縺占｣・ｽｮ縺ｧ縲√ヶ繝ｬ繝ｼ繧ｭ繧定ｸ上ｓ縺ｧ縺・↑縺上※繧ょ享謇九↓蜒阪″縺ｾ縺吶・        螳溘・ESP縺ｯABS縺ｮ莉慕ｵ・∩繧貞悄蜿ｰ縺ｫ縺励※逋ｺ螻輔＠縺溘√＞繧上・騾ｲ蛹也沿縺ｪ縺ｮ縺ｧ縺吶・      </div>
+        ABSは「<b>急ブレーキのとき</b>タイヤがロックして滑るのを防ぐ」装置で、ブレーキを踏んだ時だけ働きます。
+        ESPは「<b>曲がっている時の横滑り</b>」を防ぐ装置で、ブレーキを踏んでいなくても勝手に働きます。
+        実はESPはABSの仕組みを土台にして発展した、いわば進化版なのです。
+      </div>
     </details>
   </section>
 
   <section>
     <div class="summaryBand">
-      <p>ESP縺ｯ縲√≠縺ｪ縺溘′豌励▼縺丞燕縺ｫ貊代ｊ繧定ｦ区栢縺阪・br>莠ｺ髢薙↓縺ｯ縺ｧ縺阪↑縺・・霈ｪ縺縺代ヶ繝ｬ繝ｼ繧ｭ縲阪〒霆翫ｒ遶九※逶ｴ縺吶・/p>
-      <small>縺昴・蜉ｹ譫懊・邨ｶ螟ｧ縺ｧ縲∝腰迢ｬ縺ｮ讓ｪ貊代ｊ莠区腐繧貞､ｧ蟷・↓貂帙ｉ縺吶％縺ｨ縺御ｸ也阜荳ｭ縺ｮ隱ｿ譟ｻ縺ｧ遒ｺ隱阪＆繧後※縺・∪縺吶・/small>
+      <p>ESPは、あなたが気づく前に滑りを見抜き、<br>人間にはできない「1輪だけブレーキ」で車を立て直す。</p>
+      <small>その効果は絶大で、単独の横滑り事故を大幅に減らすことが世界中の調査で確認されています。</small>
       <br>
-      <a class="backBtn" href="#stage">笆ｲ 繧ゅ≧荳蠎ｦ3D縺ｧ菴馴ｨ薙☆繧・/a>
+      <a class="backBtn" href="#stage">▲ もう一度3Dで体験する</a>
     </div>
   </section>
 </main>
 
-<footer>縺薙・隗｣隱ｬ縺ｯ荳闊ｬ蜷代￠縺ｫ縺励￥縺ｿ繧堤ｰ｡逡･蛹悶＠縺ｦ陦ｨ迴ｾ縺励※縺・∪縺吶ょｮ滄圀縺ｮ蛻ｶ蠕｡縺ｯ繝｡繝ｼ繧ｫ繝ｼ繝ｻ霆顔ｨｮ縺ｫ繧医ｊ逡ｰ縺ｪ繧翫∪縺吶・/footer>
+<footer>この解説は一般向けにしくみを簡略化して表現しています。実際の制御はメーカー・車種により異なります。</footer>
 
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
@@ -484,7 +503,7 @@
 <script type="module">
 import * as THREE from 'three';
 
-// ---------- 蝓ｺ譛ｬ繧ｻ繝・ヨ繧｢繝・・ ----------
+// ---------- 基本セットアップ ----------
 const stage = document.getElementById('stage');
 let renderer;
 try {
@@ -512,7 +531,7 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 
-// ---------- 繝ｩ繧､繝・ぅ繝ｳ繧ｰ ----------
+// ---------- ライティング ----------
 scene.add(new THREE.HemisphereLight(0xcfe4ff, 0x51704c, 0.95));
 const sun = new THREE.DirectionalLight(0xfff2d9, 1.7);
 sun.position.set(45, 70, 35);
@@ -523,7 +542,7 @@ sun.shadow.camera.top = 80; sun.shadow.camera.bottom = -80;
 sun.shadow.camera.far = 220;
 scene.add(sun);
 
-// ---------- 繧ｳ繝ｼ繧ｹ・育峩邱・竊・蟾ｦ繧ｫ繝ｼ繝・竊・逶ｴ邱夲ｼ・----------
+// ---------- コース（直線 → 左カーブ → 直線） ----------
 const L1 = 60, R = 25, L2 = Math.PI / 2 * R, L3 = 35;
 const TOTAL = L1 + L2 + L3;
 
@@ -546,7 +565,7 @@ function tanAt(s, out = new THREE.Vector3()) {
 }
 function yawAt(s) { const t = tanAt(s); return Math.atan2(t.x, t.z); }
 
-// 蝨ｰ髱｢
+// 地面
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(420, 420),
   new THREE.MeshStandardMaterial({ color: 0x5e8c55, roughness: 1 })
@@ -556,7 +575,8 @@ ground.position.set(-20, -0.02, 10);
 ground.receiveShadow = true;
 scene.add(ground);
 
-// 驕楢ｷｯ繝ｪ繝懊Φ逕滓・・井ｸｭ蠢・ｷ壹°繧峨・繧ｪ繝輔そ繝・ヨ + 蟷・ｼ・function makeRibbon(offset, width, color, y) {
+// 道路リボン生成（中心線からのオフセット + 幅）
+function makeRibbon(offset, width, color, y) {
   const pts = [], idx = [];
   const step = 1;
   let i = 0;
@@ -581,9 +601,12 @@ scene.add(ground);
   m.receiveShadow = true;
   return m;
 }
-scene.add(makeRibbon(0, 8, 0x3a4048, 0.0));      // 霍ｯ髱｢
-scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.add(makeRibbon(-3.6, 0.25, 0xe8e8e8, 0.012)); // 蜿ｳ遶ｯ邱・
-// 繧ｻ繝ｳ繧ｿ繝ｼ繝ｩ繧､繝ｳ・育ｴ邱夲ｼ・{
+scene.add(makeRibbon(0, 8, 0x3a4048, 0.0));      // 路面
+scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 左端線
+scene.add(makeRibbon(-3.6, 0.25, 0xe8e8e8, 0.012)); // 右端線
+
+// センターライン（破線）
+{
   const dashGeo = new THREE.PlaneGeometry(0.3, 2.4);
   const dashMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.9 });
   for (let s = 0; s <= TOTAL; s += 5) {
@@ -595,7 +618,8 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
   }
 }
 
-// 蜃咲ｵ舌ヱ繝・メ・医き繝ｼ繝門・蜿｣・・{
+// 凍結パッチ（カーブ入口）
+{
   const iceMat = new THREE.MeshStandardMaterial({
     color: 0xcdeeff, roughness: 0.15, metalness: 0.1,
     transparent: true, opacity: 0.55
@@ -609,7 +633,8 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
   }
 }
 
-// 縲梧悽譚･縺ｮ騾ｲ霍ｯ縲阪ぎ繧､繝会ｼ育ｷ代・遐ｴ邱夲ｼ・const guideLine = (() => {
+// 「本来の進路」ガイド（緑の破線）
+const guideLine = (() => {
   const pts = [];
   for (let s = 50; s <= TOTAL + 8; s += 1.5) {
     const p = posAt(s);
@@ -625,7 +650,7 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
   return l;
 })();
 
-// 讓ｹ譛ｨ
+// 樹木
 {
   const trunkG = new THREE.CylinderGeometry(0.25, 0.35, 1.6, 8);
   const trunkM = new THREE.MeshStandardMaterial({ color: 0x6d4c33, roughness: 1 });
@@ -650,8 +675,9 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
   }
 }
 
-// ---------- 繧ｯ繝ｫ繝・----------
-// 霆翫・繝ｭ繝ｼ繧ｫ繝ｫ蠎ｧ讓呻ｼ壼燕譁ｹ = +z縲りｵｰ陦御ｸｭ縺ｮ縺薙・繧ｳ繝ｼ繧ｹ縺ｧ縺ｯ蜿ｳ蛛ｴ = 繝ｭ繝ｼ繧ｫ繝ｫ -x縲・function buildCar() {
+// ---------- クルマ ----------
+// 車のローカル座標：前方 = +z。走行中のこのコースでは右側 = ローカル -x。
+function buildCar() {
   const car = new THREE.Group();
   const paint = new THREE.MeshStandardMaterial({ color: 0xd8402f, roughness: 0.35, metalness: 0.25 });
   const glass = new THREE.MeshStandardMaterial({ color: 0x1c2b33, roughness: 0.15, metalness: 0.5 });
@@ -690,8 +716,10 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
   const hubM = new THREE.MeshStandardMaterial({ color: 0xb9c2cc, roughness: 0.4, metalness: 0.7 });
 
   function wheel(x, z, steerable) {
-    const grp = new THREE.Group();          // 謫崎扱逕ｨ・・蝗櫁ｻ｢・・    grp.position.set(x, 0.34, z);
-    const spin = new THREE.Group();         // 蝗櫁ｻ｢逕ｨ・・蝗櫁ｻ｢・・    const w = new THREE.Mesh(wheelG, wheelM);
+    const grp = new THREE.Group();          // 操舵用（y回転）
+    grp.position.set(x, 0.34, z);
+    const spin = new THREE.Group();         // 回転用（x回転）
+    const w = new THREE.Mesh(wheelG, wheelM);
     const hub = new THREE.Mesh(hubG, hubM);
     w.castShadow = true;
     spin.add(w, hub);
@@ -700,11 +728,14 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
     return { grp, spin, steerable, x, z };
   }
   const wheels = {
-    fl: wheel(0.82, 1.3, true),   // 蟾ｦ蜑搾ｼ医Ο繝ｼ繧ｫ繝ｫ +x = 縺薙・繧ｳ繝ｼ繧ｹ縺ｧ縺ｯ騾ｲ陦梧婿蜷大ｷｦ・・    fr: wheel(-0.82, 1.3, true),  // 蜿ｳ蜑・    rl: wheel(0.82, -1.3, false),
+    fl: wheel(0.82, 1.3, true),   // 左前（ローカル +x = このコースでは進行方向左）
+    fr: wheel(-0.82, 1.3, true),  // 右前
+    rl: wheel(0.82, -1.3, false),
     rr: wheel(-0.82, -1.3, false),
   };
 
-  // 繝悶Ξ繝ｼ繧ｭ蜈会ｼ医せ繝励Λ繧､繝茨ｼ・  const glowTex = (() => {
+  // ブレーキ光（スプライト）
+  const glowTex = (() => {
     const c = document.createElement('canvas');
     c.width = c.height = 64;
     const ctx = c.getContext('2d');
@@ -720,7 +751,7 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
     map: glowTex, transparent: true, depthWrite: false, opacity: 0
   }));
   glow.scale.setScalar(1.6);
-  glow.position.set(-1.05, 0.35, 1.3); // 蜿ｳ蜑崎ｼｪ縺ｮ螟門・
+  glow.position.set(-1.05, 0.35, 1.3); // 右前輪の外側
   car.add(glow);
 
   return { car, wheels, glow, tailM };
@@ -728,7 +759,7 @@ scene.add(makeRibbon(3.6, 0.25, 0xe8e8e8, 0.012)); // 蟾ｦ遶ｯ邱・scene.ad
 const { car, wheels, glow: brakeGlow, tailM } = buildCar();
 scene.add(car);
 
-// 讀懃衍繝ｪ繝ｳ繧ｰ
+// 検知リング
 const ring = new THREE.Mesh(
   new THREE.RingGeometry(1.0, 1.35, 40),
   new THREE.MeshBasicMaterial({ color: 0xffb020, transparent: true, opacity: 0, side: THREE.DoubleSide })
@@ -736,8 +767,10 @@ const ring = new THREE.Mesh(
 ring.rotation.x = -Math.PI / 2;
 ring.position.y = 0.05;
 scene.add(ring);
-let ringT = -1; // 逋ｺ蜍輔°繧峨・邨碁℃・郁ｲ=髱櫁｡ｨ遉ｺ・・
-// 繧ｹ繧ｭ繝・ラ繝槭・繧ｯ・医ち繧､繝､逞包ｼ・const SKID_MAX = 500;
+let ringT = -1; // 発動からの経過（負=非表示）
+
+// スキッドマーク（タイヤ痕）
+const SKID_MAX = 500;
 const skidGeo = new THREE.PlaneGeometry(0.3, 0.85);
 const skidMat = new THREE.MeshBasicMaterial({ color: 0x14161a, transparent: true, opacity: 0.5 });
 const skids = [];
@@ -759,17 +792,20 @@ function dropSkid(localX, localZ) {
 }
 function clearSkids() { skids.forEach(m => m.visible = false); skidIdx = 0; }
 
-// ---------- DOM 蜿ら・ ----------
+// ---------- DOM 参照 ----------
 const $ = id => document.getElementById(id);
 const titleCard = $('titleCard'), hud = $('hud'), captionEl = $('caption'),
   slowTag = $('slowTag'), controls = $('controls'), endPanel = $('endPanel'),
   speedVal = $('speedVal'), espLamp = $('espLamp'), espLampLabel = $('espLampLabel'),
   wmFR = $('wm-fr');
 
-// ---------- 繧ｷ繝翫Μ繧ｪ迥ｶ諷・----------
-const SLIP_S = 64;          // 貊代ｊ蟋九ａ繧倶ｽ咲ｽｮ・医き繝ｼ繝門・蜿｣縺ｮ豌ｷ縺ｮ荳奇ｼ・const V0 = 15;              // 騾壼ｸｸ騾溷ｺｦ・郁｡ｨ遉ｺ縺ｯ x4 = 60km/h・・let mode = 'idle';          // idle | off | on
-let simS = 0;               // 繧ｳ繝ｼ繧ｹ荳翫・襍ｰ陦瑚ｷ晞屬
-let slipDt = 0;             // 貊代ｊ蟋九ａ縺ｦ縺九ｉ縺ｮ邨碁℃・医す繝溘Η遘抵ｼ・let slipped = false;
+// ---------- シナリオ状態 ----------
+const SLIP_S = 64;          // 滑り始める位置（カーブ入口の氷の上）
+const V0 = 15;              // 通常速度（表示は x4 = 60km/h）
+let mode = 'idle';          // idle | off | on
+let simS = 0;               // コース上の走行距離
+let slipDt = 0;             // 滑り始めてからの経過（シミュ秒）
+let slipped = false;
 let ended = false;
 let view = 'chase';
 let capKey = '';
@@ -778,7 +814,8 @@ let idleAngle = 0;
 const slipPos = posAt(SLIP_S);
 const slipTan = tanAt(SLIP_S);
 const slipYaw = yawAt(SLIP_S);
-const outDir = new THREE.Vector3(-slipTan.z, 0, slipTan.x); // 騾ｲ陦梧婿蜷大承蛛ｴ・医き繝ｼ繝門､門・・・
+const outDir = new THREE.Vector3(-slipTan.z, 0, slipTan.x); // 進行方向右側（カーブ外側）
+
 function smooth(a, b, x) {
   const t = Math.min(Math.max((x - a) / (b - a), 0), 1);
   return t * t * (3 - 2 * t);
@@ -805,7 +842,7 @@ function startRun(m) {
   endPanel.classList.remove('show');
   controls.querySelectorAll('.btn').forEach(b => b.disabled = true);
   espLamp.classList.toggle('off', m === 'off');
-  espLampLabel.textContent = m === 'off' ? 'ESP縺ｪ縺・ : 'ESP';
+  espLampLabel.textContent = m === 'off' ? 'ESPなし' : 'ESP';
   brakeGlow.material.opacity = 0;
   tailM.emissiveIntensity = 0.15;
   wmFR.classList.remove('braking');
@@ -815,12 +852,12 @@ function finishRun() {
   ended = true;
   controls.querySelectorAll('.btn').forEach(b => b.disabled = false);
   const isOff = mode === 'off';
-  $('endEmoji').textContent = isOff ? '乖' : '・';
-  $('endTitle').textContent = isOff ? '繧ｹ繝斐Φ縺励※繧ｳ繝ｼ繧ｹ繧｢繧ｦ繝遺ｦ' : '菴輔＃縺ｨ繧ゅ↑縺上き繝ｼ繝悶ｒ騾夐℃・・;
+  $('endEmoji').textContent = isOff ? '😨' : '😌';
+  $('endTitle').textContent = isOff ? 'スピンしてコースアウト…' : '何ごともなくカーブを通過！';
   $('endText').textContent = isOff
-    ? '貊代ｊ蜃ｺ縺励◆繧峨ワ繝ｳ繝峨Ν繧ゅヶ繝ｬ繝ｼ繧ｭ繧ょ柑縺阪∪縺帙ｓ縲ゆｺｺ髢薙・蜿榊ｿ懊〒縺ｯ髢薙↓蜷医ｏ縺ｪ縺・・縺ｧ縺吶・
-    : 'ESP縺ｯ貊代ｊ繧・.02遘偵〒讀懃衍縺励∝承蜑阪・繧ｿ繧､繝､縺縺代↓閾ｪ蜍輔ヶ繝ｬ繝ｼ繧ｭ縲ゅラ繝ｩ繧､繝舌・縺ｯ譎ｮ騾壹↓驕玖ｻ｢縺励※縺・◆縺縺代〒縺吶・;
-  $('btnOther').textContent = isOff ? '笆ｶ 谺｡縺ｯESP縺ゅｊ縺ｧ襍ｰ繧・ : '笆ｶ ESP縺ｪ縺励→隕区ｯ斐∋繧・;
+    ? '滑り出したらハンドルもブレーキも効きません。人間の反応では間に合わないのです。'
+    : 'ESPは滑りを0.02秒で検知し、右前のタイヤだけに自動ブレーキ。ドライバーは普通に運転していただけです。';
+  $('btnOther').textContent = isOff ? '▶ 次はESPありで走る' : '▶ ESPなしと見比べる';
   $('btnOther').className = 'btn ' + (isOff ? 'btn-on' : 'btn-off');
   endPanel.classList.add('show');
 }
@@ -832,7 +869,7 @@ $('btnOther').addEventListener('click', () => startRun(mode === 'off' ? 'on' : '
 $('btnViewChase').addEventListener('click', () => view = 'chase');
 $('btnViewTop').addEventListener('click', () => view = 'top');
 
-// ---------- 繧ｫ繝｡繝ｩ ----------
+// ---------- カメラ ----------
 const camPos = new THREE.Vector3(30, 22, 80);
 const camLook = new THREE.Vector3(0, 0, 30);
 
@@ -846,8 +883,9 @@ function updateCamera(dt) {
     target.copy(car.position).add(new THREE.Vector3(0, 46, 6));
     look.copy(car.position);
   } else {
-    // 霑ｽ縺・°縺托ｼ夊ｻ翫・蠕梧婿繧・ｄ荳・    const yaw = slipped && mode === 'off' ? slipYaw : car.rotation.y;
-    const back = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)); // 霆翫・蠕梧婿 = -蜑肴婿
+    // 追いかけ：車の後方やや上
+    const yaw = slipped && mode === 'off' ? slipYaw : car.rotation.y;
+    const back = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)); // 車の後方 = -前方
     target.copy(car.position).addScaledVector(back, -11).add(new THREE.Vector3(0, 5.2, 0));
     look.copy(car.position).add(new THREE.Vector3(0, 1.2, 0));
   }
@@ -858,7 +896,7 @@ function updateCamera(dt) {
   camera.lookAt(camLook);
 }
 
-// ---------- 繝｡繧､繝ｳ繝ｫ繝ｼ繝・----------
+// ---------- メインループ ----------
 const clock = new THREE.Clock();
 let wheelRoll = 0;
 let steer = 0;
@@ -867,7 +905,8 @@ function frame() {
   requestAnimationFrame(frame);
   const rawDt = Math.min(clock.getDelta(), 0.05);
 
-  // 繧ｹ繝ｭ繝ｼ繝｢繝ｼ繧ｷ繝ｧ繝ｳ蛻､螳・  let timescale = 1;
+  // スローモーション判定
+  let timescale = 1;
   if (mode === 'on' && slipped && slipDt < 2.6 && !ended) timescale = 0.35;
   if (mode === 'off' && slipped && slipDt < 1.6 && !ended) timescale = 0.45;
   slowTag.classList.toggle('show', timescale < 1 && !ended);
@@ -884,7 +923,7 @@ function frame() {
       car.rotation.y = yawAt(simS);
       wheelRoll += V0 * dt / 0.34;
     } else if (mode === 'off') {
-      // ESP縺ｪ縺暦ｼ壹げ繝ｪ繝・・繧貞､ｱ縺・峩騾ｲ + 繧ｹ繝斐Φ
+      // ESPなし：グリップを失い直進 + スピン
       slipDt += dt;
       const tStop = 4.7, a = V0 / tStop;
       const d = Math.min(slipDt, tStop);
@@ -894,7 +933,8 @@ function frame() {
       const spin = 3.7 * smooth(0, 3.4, slipDt) ** 1.25;
       car.rotation.y = slipYaw + spin;
       speedKmh = Math.max(0, Math.round((V0 - a * d) * 4));
-      tailM.emissiveIntensity = 2.2; // 繝峨Λ繧､繝舌・縺梧・縺ｦ縺ｦ繝悶Ξ繝ｼ繧ｭ・医〒繧ょ柑縺九↑縺・ｼ・      wheelRoll += Math.max(0, V0 - a * d) * dt * 0.2 / 0.34; // 縺ｻ縺ｼ繝ｭ繝・け
+      tailM.emissiveIntensity = 2.2; // ドライバーが慌ててブレーキ（でも効かない）
+      wheelRoll += Math.max(0, V0 - a * d) * dt * 0.2 / 0.34; // ほぼロック
       if (slipDt > 0.05 && speedKmh > 2) {
         skidTimer += dt;
         if (skidTimer > 0.028) {
@@ -905,7 +945,8 @@ function frame() {
       }
       if (slipDt > 4.6) finishRun();
     } else {
-      // ESP縺ゅｊ・壻ｸ迸ｬ貊代ｋ縺悟叉菫ｮ豁｣縲・ｲ霍ｯ縺ｯ繧ｭ繝ｼ繝・      slipDt += dt;
+      // ESPあり：一瞬滑るが即修正、進路はキープ
+      slipDt += dt;
       simS += V0 * (1 - 0.25 * smooth(0.3, 0.8, slipDt) * (1 - smooth(1.8, 2.4, slipDt))) * dt;
       const p = posAt(simS);
       const yawErr = 0.20 * smooth(0, 0.45, slipDt) * (1 - smooth(0.9, 2.1, slipDt));
@@ -915,7 +956,8 @@ function frame() {
       speedKmh = Math.round(V0 * (1 - 0.25 * smooth(0.3, 0.8, slipDt) * (1 - smooth(1.8, 2.4, slipDt))) * 4);
       wheelRoll += V0 * dt / 0.34;
 
-      // 蜿ｳ蜑崎ｼｪ繝悶Ξ繝ｼ繧ｭ・・.25縲・.3遘抵ｼ・      const braking = slipDt > 0.25 && slipDt < 2.3;
+      // 右前輪ブレーキ（0.25〜2.3秒）
+      const braking = slipDt > 0.25 && slipDt < 2.3;
       brakeGlow.material.opacity = braking ? 0.7 + 0.3 * Math.sin(performance.now() * 0.03) : 0;
       wmFR.classList.toggle('braking', braking);
       espLamp.classList.toggle('blink', slipDt < 2.6);
@@ -928,7 +970,7 @@ function frame() {
     }
   }
 
-  // 讀懃衍繝ｪ繝ｳ繧ｰ
+  // 検知リング
   if (ringT >= 0) {
     ringT += rawDt;
     const life = 1.1;
@@ -942,7 +984,7 @@ function frame() {
     } else { ring.visible = false; ringT = -1; }
   } else ring.visible = false;
 
-  // 謫崎扱縺ｨ繧ｿ繧､繝､蝗櫁ｻ｢
+  // 操舵とタイヤ回転
   const steerTarget =
     mode !== 'idle' && slipped && mode === 'off' ? 0.6 :
     (simS > L1 - 6 && simS < L1 + L2 ? 0.35 : 0);
@@ -954,19 +996,19 @@ function frame() {
   }
   if (mode === 'idle' || (mode === 'on' && !slipped)) tailM.emissiveIntensity = 0.15;
 
-  // 繧ｭ繝｣繝励す繝ｧ繝ｳ
+  // キャプション
   if (mode !== 'idle' && !ended) {
     if (!slipped) {
-      if (simS < 40) setCaption('c1', '囓 譎る・0km縺ｧ蜃咲ｵ舌＠縺溘き繝ｼ繝悶↓霑代▼縺・※縺・∪縺吮ｦ');
-      else setCaption('c2', '笞・・縺薙・蜈医∬ｷｯ髱｢縺悟㍾邨撰ｼ・ｼ域ｰｴ濶ｲ縺ｮ驛ｨ蛻・ｼ・);
+      if (simS < 40) setCaption('c1', '🚗 時速60kmで凍結したカーブに近づいています…');
+      else setCaption('c2', '⚠️ この先、路面が凍結！（水色の部分）');
     } else if (mode === 'off') {
-      if (slipDt < 1.5) setCaption('o1', '笶・ｸ・繧ｿ繧､繝､縺梧ｻ代ｊ蜃ｺ縺励◆・√ワ繝ｳ繝峨Ν繧貞・縺｣縺ｦ繧よ峇縺後ｌ縺ｪ縺・ｦ', 'alert');
-      else if (slipDt < 3.2) setCaption('o2', '亞 繝峨Λ繧､繝舌・縺ｫ縺ｯ菴輔ｂ縺ｧ縺阪∪縺帙ｓ縲りｻ翫・繧ｹ繝斐Φ窶ｦ', 'alert');
-      else setCaption('o3', '徴 邱代・轤ｹ邱夲ｼ晄悽譚･縺ｮ騾ｲ霍ｯ縺九ｉ螟ｧ縺阪￥螟悶ｌ縺ｦ縺励∪縺・∪縺励◆', 'alert');
+      if (slipDt < 1.5) setCaption('o1', '❄️ タイヤが滑り出した！ハンドルを切っても曲がれない…', 'alert');
+      else if (slipDt < 3.2) setCaption('o2', '😱 ドライバーには何もできません。車はスピン…', 'alert');
+      else setCaption('o3', '💥 緑の点線＝本来の進路から大きく外れてしまいました', 'alert');
     } else {
-      if (slipDt < 0.8) setCaption('n1', '笞｡ ESP縺梧ｨｪ貊代ｊ繧呈､懃衍・・ｼ医ｏ縺壹°0.02遘抵ｼ・, 'action');
-      else if (slipDt < 2.5) setCaption('n2', '屓 <b>蜿ｳ蜑阪・繧ｿ繧､繝､縺縺・/b>縺ｫ閾ｪ蜍輔ヶ繝ｬ繝ｼ繧ｭ 竊・霆翫・蜷代″繧堤ｫ九※逶ｴ縺・, 'action');
-      else setCaption('n3', '笨・騾ｲ霍ｯ繧偵く繝ｼ繝暦ｼ√ラ繝ｩ繧､繝舌・縺ｯ譎ｮ騾壹↓驕玖ｻ｢縺励※縺・ｋ縺縺・, 'good');
+      if (slipDt < 0.8) setCaption('n1', '⚡ ESPが横滑りを検知！（わずか0.02秒）', 'action');
+      else if (slipDt < 2.5) setCaption('n2', '🛞 <b>右前のタイヤだけ</b>に自動ブレーキ → 車の向きを立て直す', 'action');
+      else setCaption('n3', '✅ 進路をキープ！ドライバーは普通に運転しているだけ', 'good');
     }
   } else if (mode === 'idle') hideCaption();
   if (ended) hideCaption();
@@ -978,7 +1020,7 @@ function frame() {
   renderer.render(scene, camera);
 }
 
-// 蛻晄悄驟咲ｽｮ
+// 初期配置
 {
   const p = posAt(6);
   car.position.set(p.x, 0, p.z);
@@ -987,7 +1029,8 @@ function frame() {
 resize();
 frame();
 
-// URL繝上ャ繧ｷ繝･縺ｧ閾ｪ蜍募・逕滂ｼ亥虚菴懃｢ｺ隱咲畑・・ #off / #on / #off:58・井ｽ咲ｽｮ繧ｸ繝｣繝ｳ繝暦ｼ・{
+// URLハッシュで自動再生（動作確認用）: #off / #on / #off:58（位置ジャンプ）
+{
   const m = location.hash.match(/^#(off|on)(?::(\d+))?$/);
   if (m) {
     startRun(m[1]);
