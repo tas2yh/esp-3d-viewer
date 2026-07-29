@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP 3D シミュレーター - 複数ビュー</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #0f172a;
+        }
+
+        /* ===== タブヘッダー ===== */
+        .tabs-header {
+            display: flex;
+            background: #0f172a;
+            border-bottom: 2px solid #334155;
+            gap: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .tab-button {
+            padding: 16px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #94a3b8;
+            border: none;
+            background: none;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+        }
+
+        .tab-button:hover {
+            color: #cbd5e1;
+            background: #1e293b;
+        }
+
+        .tab-button.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Claude ビュー */
+        #claude-view {
+            background: #f5f7fa;
+            color: #22303c;
+            min-height: 100vh;
+        }
+
+        /* Gemini ビュー */
+        #gemini-view {
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* 元のスタイルはiframeで保持 */
+        iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- タブナビゲーション -->
+    <div class="tabs-header">
+        <button class="tab-button active" data-tab="claude">
+            🤖 Claude - Original
+        </button>
+        <button class="tab-button" data-tab="gemini">
+            ✨ Gemini Enterprise
+        </button>
+    </div>
+
+    <!-- Claude ビュー -->
+    <div id="claude-view" class="tab-content active">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.2rem;">
+            <p>Loading Claude version...</p>
+        </div>
+    </div>
+
+    <!-- Gemini ビュー -->
+    <div id="gemini-view" class="tab-content">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; color: #e2e8f0; font-size: 1.2rem;">
+            <p>Loading Gemini version...</p>
+        </div>
+    </div>
+
+    <script>
+        // タブ切替機能
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // 各ビューのコンテンツをロード（iframeを使用）
+        function loadContent(tabName) {
+            const contentDiv = document.getElementById(tabName + '-view');
+            const fileName = tabName === 'claude' ? 'index.html' : 'gemini.html';
+
+            // 既にロード済みならスキップ
+            if (contentDiv.querySelector('iframe')) {
+                return;
+            }
+
+            // iframeを作成して直接srcで指定
+            const iframe = document.createElement('iframe');
+            iframe.style.border = 'none';
+            iframe.style.width = '100%';
+            iframe.style.height = '100vh';
+            iframe.src = fileName;
+            
+            contentDiv.innerHTML = '';
+            contentDiv.appendChild(iframe);
+        }
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+
+                // 全てのタブとコンテンツを非アクティブにする
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // クリックされたタブをアクティブにする
+                button.classList.add('active');
+                const activeContent = document.getElementById(tabName + '-view');
+                activeContent.classList.add('active');
+
+                // コンテンツをロード
+                loadContent(tabName);
+
+                // 選択状態をlocalStorageに保存
+                localStorage.setItem('activeTab', tabName);
+            });
+        });
+
+        // ページロード時に前回選択していたタブを復元
+        window.addEventListener('load', () => {
+            const savedTab = localStorage.getItem('activeTab') || 'claude';
+            const savedButton = Array.from(tabButtons).find(btn => btn.getAttribute('data-tab') === savedTab);
+            if (savedButton) {
+                savedButton.click();
+            } else {
+                // デフォルトでClaudeを読み込む
+                const claudeButton = Array.from(tabButtons).find(btn => btn.getAttribute('data-tab') === 'claude');
+                if (claudeButton) claudeButton.click();
+            }
+        });
+    </script>
+
+</body>
+</html>

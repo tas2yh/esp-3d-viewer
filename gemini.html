@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「車の見えない守護神」ESP（横滑り防止装置）を3Dで体感しよう！</title>
+    <!-- Tailwind CSS (デザイン調整用) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js (3D描画エンジン) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        @keyframes pulse-orange {
+            0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 2px rgba(249, 115, 22, 0.7)); }
+            50% { transform: scale(1.1); opacity: 0.4; filter: drop-shadow(0 0 15px rgba(249, 115, 22, 1)); }
+        }
+        .active-esp-lamp {
+            animation: pulse-orange 0.6s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+    <!-- ヘッダー -->
+    <header class="py-8 px-4 text-center border-b border-slate-800 bg-slate-950 shadow-lg">
+        <span class="px-3 py-1 text-xs font-bold bg-blue-600 text-white rounded-full uppercase tracking-wider">安全技術を3Dで体感</span>
+        <h1 class="text-3xl md:text-4xl font-extrabold mt-3 tracking-tight text-white">
+            雨や雪の急カーブも安心！<br class="md:hidden">「ESP」ってどんな機能？
+        </h1>
+        <p class="text-slate-400 mt-2 max-w-2xl mx-auto text-sm md:text-base">
+            車は運転するけれど、技術的なことはよく分からない…という方向けに、見えない守護神「ESP（横滑り防止装置）」の役割を3Dで優しく解説します。
+        </p>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- 左・中央列：3Dシミュレーター＆コントロールパネル -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- 3D表示エリア -->
+            <div class="relative bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                <!-- 3Dキャンバス -->
+                <div id="canvas-container" class="w-full h-[350px] md:h-[480px]"></div>
+
+                <!-- HUD（画面上のステータス表示） -->
+                <div class="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
+                    <!-- 走行状態インジケーター -->
+                    <div class="bg-slate-900/90 backdrop-blur border border-slate-700/50 p-3 rounded-xl flex items-center gap-3">
+                        <div id="status-dot" class="w-3.5 h-3.5 rounded-full bg-slate-500"></div>
+                        <div>
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">走行モード</div>
+                            <div id="status-text" class="text-sm font-black text-white">スタート前</div>
+                        </div>
+                    </div>
+
+                    <!-- ESP作動ランプ -->
+                    <div id="esp-lamp" class="bg-slate-900/90 backdrop-blur border border-slate-700/50 p-3 rounded-xl flex items-center gap-3 opacity-30 transition-all duration-300">
+                        <svg class="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19c4-1 6-4 10-4s6 3 10 3" />
+                            <rect x="7" y="6" width="10" height="6" rx="2" />
+                            <circle cx="9" cy="14" r="2" />
+                            <circle cx="15" cy="14" r="2" />
+                        </svg>
+                        <div>
+                            <div class="text-[10px] text-orange-400 font-bold tracking-wider">ESP作動状態</div>
+                            <div id="esp-lamp-text" class="text-xs font-black text-slate-300">待機中</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 画面中央の警告オーバーレイ -->
+                <div id="danger-overlay" class="absolute inset-0 bg-red-600/20 backdrop-blur-xs flex flex-col justify-center items-center pointer-events-none opacity-0 transition-all duration-500">
+                    <span class="text-6xl animate-bounce">⚠️</span>
+                    <h2 class="text-2xl font-black text-white mt-4 tracking-wide">スピン発生！コースアウト！</h2>
+                    <p class="text-sm text-red-200 mt-1">ハンドルをいくら回しても車が言うことを聞きません</p>
+                </div>
+
+                <div id="success-overlay" class="absolute inset-0 bg-emerald-600/10 backdrop-blur-xs flex flex-col justify-center items-center pointer-events-none opacity-0 transition-all duration-500">
+                    <span class="text-6xl animate-bounce">🛡️</span>
+                    <h2 class="text-2xl font-black text-emerald-300 mt-4 tracking-wide">ESPが姿勢を自動で修正！</h2>
+                    <p class="text-sm text-emerald-100 mt-1">滑りかけた車体に自動でブレーキをかけ、ピンチを回避しました</p>
+                </div>
+            </div>
+
+            <!-- コントロールパネル -->
+            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 shadow-lg">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 text-center">ボタンを押して、スタートしてみよう！</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button id="btn-esp-off" class="py-4 px-6 rounded-xl bg-red-950/85 hover:bg-red-900 text-red-200 border border-red-700/50 font-black text-center transition-all flex flex-col items-center justify-center">
+                        <span class="text-xs text-red-400 font-normal">もし装置がなかったら…</span>
+                        <span class="text-base mt-0.5">🔴 ESP OFF でスタート</span>
+                    </button>
+                    <button id="btn-esp-on" class="py-4 px-6 rounded-xl bg-emerald-950/85 hover:bg-emerald-900 text-emerald-200 border border-emerald-700/50 font-black text-center transition-all flex flex-col items-center justify-center">
+                        <span class="text-xs text-emerald-400 font-normal">見守られている安心感！</span>
+                        <span class="text-base mt-0.5">🟢 ESP ON でスタート</span>
+                    </button>
+                    <button id="btn-reset" class="py-4 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 font-black text-center transition-all flex flex-col items-center justify-center">
+                        <span class="text-xs text-slate-400 font-normal">もう一度見る</span>
+                        <span class="text-base mt-0.5">🔄 スタートに戻す</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 右列：テキスト解説 -->
+        <div class="space-y-6">
+            
+            <!-- ESPとはカード -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-lg space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">💡</span>
+                    <h2 class="text-lg font-bold text-white">ESPってなぁに？</h2>
+                </div>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    車を人間に例えるなら、ESP（横滑り防止装置）は**「おっとっと！と滑りそうになった瞬間に、無意識に足を一歩出して踏ん張る反射神経」**のようなものです。
+                </p>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    雨の日の濡れた路面や雪道、急にハンドルを切ったとき、タイヤが滑って車がクルクルとスピンしそうになります。そんな危険を察知した瞬間に、**ドライバーの代わりに車が自動的に体勢を整えてくれる安全装置**です。
+                </p>
+            </div>
+
+            <!-- 3つのセンサー -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-lg space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">👀</span>
+                    <h2 class="text-lg font-bold text-white">どうやって滑りを防ぐの？</h2>
+                </div>
+                <p class="text-slate-300 text-sm">
+                    ESPは、車に搭載された**「3つの目（センサー）」**を使って、1秒間に何十回も車の状態を監視しています。
+                </p>
+                <div class="space-y-3 text-xs">
+                    <div id="sensor-steering" class="p-2 rounded bg-slate-900 border border-slate-800 transition-all duration-300 text-slate-400">
+                        <strong class="text-blue-400 block text-sm">1. ハンドル角度センサー</strong>
+                        ドライバーが「どっちに曲がりたいか（意志）」を見ています。
+                    </div>
+                    <div id="sensor-yaw" class="p-2 rounded bg-slate-900 border border-slate-800 transition-all duration-300 text-slate-400">
+                        <strong class="text-orange-400 block text-sm">2. 回転・横揺れセンサー（ヨーレート）</strong>
+                        車体が「実際にどっちを向いて滑っているか」を感じ取ります。
+                    </div>
+                    <div id="sensor-wheels" class="p-2 rounded bg-slate-900 border border-slate-800 transition-all duration-300 text-slate-400">
+                        <strong class="text-emerald-400 block text-sm">3. タイヤ回転センサー</strong>
+                        4つのタイヤが「それぞれ空回りしていないか」をチェックします。
+                    </div>
+                </div>
+                <p class="text-slate-400 text-[11px] leading-normal pt-2 border-t border-slate-800">
+                    ※シミュレーション中、車が危険を感知すると、作動しているセンサーがピカピカ光ります！
+                </p>
+            </div>
+
+            <!-- 魔法のブレーキトリック -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-lg space-y-3">
+                <h3 class="font-bold text-white text-sm flex items-center gap-1">
+                    <span>⚙️</span> 魔法の仕組み：個別ブレーキ
+                </h3>
+                <p class="text-slate-300 text-xs leading-relaxed">
+                    普通のブレーキは「4つのタイヤすべて」を同時に止めますが、ESPは**「滑っている方向と逆向きに車を引っ張るために、特定の1つのタイヤだけ」**にピンポイントで自動ブレーキをかけます。これにより、車線をはみ出さずに安全に曲がれるのです。
+                </p>
+                <div class="bg-blue-950/40 p-3 rounded-lg border border-blue-900/50 text-blue-200 text-xs">
+                    🌟 <strong>ここがすごい！</strong><br>
+                    ESPは世界中で義務化されており、普及によって<strong>命に関わるスリップ事故の約40%を減らす効果</strong>が実証されています。
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="mt-12 py-6 px-4 text-center border-t border-slate-800 text-xs text-slate-500 bg-slate-950">
+        <p>© 2026 Drive Safe Project / Bosch Technology-inspired Interactive Guide</p>
+    </footer>
+
+    <!-- 3Dシミュレーションの挙動用JavaScript -->
+    <script>
+        // --- 3D基本設定 ---
+        const container = document.getElementById('canvas-container');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0f172a); // ダークブルー背景
+
+        // カメラ
+        const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+        camera.position.set(8, 7, -10);
+
+        // レンダラー
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.shadowMap.enabled = true;
+        container.appendChild(renderer.domElement);
+
+        // ライト
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, -10);
+        scene.add(dirLight);
+
+        // --- 道路の作成 (S字・カーブの作成) ---
+        const pathPoints = [];
+        // 直進部分
+        for(let i = 0; i < 15; i++) {
+            pathPoints.push(new THREE.Vector3(0, 0, i * 1.5 - 12));
+        }
+        // 左方向へのヘアピンカーブ
+        const curveRadius = 12;
+        const startZ = 15 * 1.5 - 12; 
+        for(let i = 0; i < 25; i++) {
+            let angle = (i / 25) * (Math.PI * 0.7); 
+            let x = -curveRadius * (1 - Math.cos(angle));
+            let z = startZ + curveRadius * Math.sin(angle);
+            pathPoints.push(new THREE.Vector3(x, 0, z));
+        }
+        // カーブ後の直線
+        const lastPoint = pathPoints[pathPoints.length - 1];
+        const secondLastPoint = pathPoints[pathPoints.length - 2];
+        const dir = new THREE.Vector3().subVectors(lastPoint, secondLastPoint).normalize();
+        for(let i = 1; i <= 15; i++) {
+            pathPoints.push(lastPoint.clone().addScaledVector(dir, i * 1.5));
+        }
+
+        // 道路タイルの描画
+        pathPoints.forEach((point, idx) => {
+            if (idx === 0) return;
+            const prev = pathPoints[idx - 1];
+            
+            // アスファルト
+            const segment = new THREE.Mesh(
+                new THREE.BoxGeometry(4, 0.05, 1.6),
+                new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 })
+            );
+            segment.position.copy(point.clone().add(prev).multiplyScalar(0.5));
+            segment.lookAt(point);
+            scene.add(segment);
+
+            // センター黄ライン
+            const stripe = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, 0.07, 0.8),
+                new THREE.MeshBasicMaterial({ color: 0xeab308 })
+            );
+            stripe.position.copy(segment.position);
+            stripe.position.y += 0.01;
+            stripe.lookAt(point);
+            scene.add(stripe);
+        });
+
+        // 雨で滑りやすい路面を表現するグラウンド
+        const floorGeo = new THREE.PlaneGeometry(100, 100);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.6 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -0.05;
+        scene.add(floor);
+
+
+        // --- 車両(Car)モデルの作成 ---
+        const car = new THREE.Group();
+        
+        // 車体(ボディ)
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.6, roughness: 0.2 });
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.7, 3.2), bodyMat);
+        body.position.y = 0.5;
+        car.add(body);
+
+        // キャビン
+        const cabin = new THREE.Mesh(
+            new THREE.BoxGeometry(1.4, 0.5, 1.8),
+            new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.1 })
+        );
+        cabin.position.set(0, 1.0, -0.2);
+        car.add(cabin);
+
+        // ライト類
+        const headlightL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.1), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        headlightL.position.set(-0.6, 0.45, 1.6);
+        const headlightR = headlightL.clone();
+        headlightR.position.x = 0.6;
+        car.add(headlightL);
+        car.add(headlightR);
+
+        const taillightL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.1), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+        taillightL.position.set(-0.6, 0.45, -1.6);
+        const taillightR = taillightL.clone();
+        taillightR.position.x = 0.6;
+        car.add(taillightL);
+        car.add(taillightR);
+
+        // 4つのタイヤ
+        const wheelGeom = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 16);
+        wheelGeom.rotateZ(Math.PI / 2);
+        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
+        
+        const wheels = [];
+        const wheelPositions = [
+            [-0.85, 0.35, 1.0],  // 前輪 左
+            [0.85, 0.35, 1.0],   // 前輪 右
+            [-0.85, 0.35, -1.0], // 後輪 左
+            [0.85, 0.35, -1.0]   // 後輪 右
+        ];
+        wheelPositions.forEach((pos) => {
+            const wheel = new THREE.Mesh(wheelGeom, wheelMat);
+            // 修正箇所：インデックス [1] と [2] を正しく指定
+            wheel.position.set(pos[0], pos[1], pos[2]);
+            car.add(wheel);
+            wheels.push(wheel);
+        });
+
+        // ESP作動時に赤くピカピカ光るブレーキインジケーター（タイヤの上に配置）
+        const brakeIndicators = [];
+        wheelPositions.forEach((pos) => {
+            const ind = new THREE.Mesh(
+                new THREE.SphereGeometry(0.12, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0xef4444 })
+            );
+            // 修正箇所：インデックス [1] と [2] を正しく指定し計算
+            ind.position.set(pos[0], pos[1] + 0.6, pos[2]);
+            ind.visible = false;
+            car.add(ind);
+            brakeIndicators.push(ind);
+        });
+
+        scene.add(car);
+
+
+        // --- シミュレーション制御ステート ---
+        let simMode = 'none'; // 'on', 'off', 'none'
+        let currentIndex = 0;
+        let isPlaying = false;
+        let spinAngle = 0;
+        let offCourseX = 0;
+        let offCourseZ = 0;
+
+        // UI要素
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const espLamp = document.getElementById('esp-lamp');
+        const espLampText = document.getElementById('esp-lamp-text');
+        const dangerOverlay = document.getElementById('danger-overlay');
+        const successOverlay = document.getElementById('success-overlay');
+
+        const sSteering = document.getElementById('sensor-steering');
+        const sYaw = document.getElementById('sensor-yaw');
+        const sWheels = document.getElementById('sensor-wheels');
+
+        // --- シミュレーションリセット関数 ---
+        function resetSimulation() {
+            currentIndex = 0;
+            isPlaying = false;
+            spinAngle = 0;
+            offCourseX = 0;
+            offCourseZ = 0;
+            car.position.set(0, 0, -12);
+            car.rotation.set(0, 0, 0);
+            
+            // ブレーキインジケーター非表示
+            brakeIndicators.forEach(ind => ind.visible = false);
+
+            // UIリセット
+            statusDot.className = "w-3.5 h-3.5 rounded-full bg-slate-500";
+            statusText.innerText = "スタート前";
+            espLamp.classList.add('opacity-30');
+            espLamp.classList.remove('active-esp-lamp');
+            espLampText.innerText = "待機中";
+            dangerOverlay.style.opacity = "0";
+            successOverlay.style.opacity = "0";
+
+            // センサー表示リセット
+            sSteering.className = "p-2 rounded bg-slate-900 border border-slate-800 text-slate-400";
+            sYaw.className = "p-2 rounded bg-slate-900 border border-slate-800 text-slate-400";
+            sWheels.className = "p-2 rounded bg-slate-900 border border-slate-800 text-slate-400";
+
+            // カメラ初期位置
+            camera.position.set(8, 7, -10);
+            camera.lookAt(car.position);
+        }
+
+        resetSimulation();
+
+        // --- アニメーションループ ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isPlaying) {
+                currentIndex += 0.28; // 進行速度
+                
+                // コース端で自動終了
+                if (currentIndex >= pathPoints.length - 1) {
+                    isPlaying = false;
+                    statusText.innerText = "走行完了";
+                    statusDot.className = "w-3.5 h-3.5 rounded-full bg-blue-500";
+                    brakeIndicators.forEach(ind => ind.visible = false);
+                    espLamp.classList.add('opacity-30');
+                    espLamp.classList.remove('active-esp-lamp');
+                    return;
+                }
+
+                const baseIdx = Math.floor(currentIndex);
+                const t = currentIndex - baseIdx;
+                
+                // 次のポイント範囲の境界チェック
+                const nextIdx = Math.min(baseIdx + 1, pathPoints.length - 1);
+                const targetPos = new THREE.Vector3().lerpVectors(pathPoints[baseIdx], pathPoints[nextIdx], t);
+                const lookAtPoint = pathPoints[Math.min(nextIdx + 1, pathPoints.length - 1)];
+
+                // ==========================================
+                // 🟢 ESP ON の挙動：安全に曲がる
+                // ==========================================
+                if (simMode === 'on') {
+                    car.position.copy(targetPos);
+                    car.lookAt(lookAtPoint);
+
+                    // カーブ進入時 (中間部分) にESPが作動
+                    if (baseIdx >= 15 && baseIdx <= 38) {
+                        statusText.innerText = "ESP作動！姿勢を維持";
+                        statusDot.className = "w-3.5 h-3.5 rounded-full bg-emerald-500";
+                        successOverlay.style.opacity = "1";
+
+                        // ESP点滅ランプ
+                        espLamp.classList.remove('opacity-30');
+                        espLamp.classList.add('active-esp-lamp');
+                        espLampText.innerText = "介入中！";
+
+                        // センサーUIの発光
+                        sSteering.className = "p-2 rounded bg-blue-900/60 border border-blue-500 text-white font-bold animate-pulse";
+                        sYaw.className = "p-2 rounded bg-orange-900/60 border border-orange-500 text-white font-bold animate-pulse";
+                        sWheels.className = "p-2 rounded bg-emerald-900/60 border border-emerald-500 text-white font-bold animate-pulse";
+
+                        // 修正箇所：個別のインジケーター（配列要素）を点滅させる
+                        const tick = Math.floor(Date.now() / 80) % 2;
+                        brakeIndicators[0].visible = false;
+                        brakeIndicators[1].visible = (tick === 0); // 外側前輪
+                        brakeIndicators[2].visible = (tick === 1); // 内側後輪
+                        brakeIndicators[3].visible = false;
+                    } else {
+                        brakeIndicators.forEach(ind => ind.visible = false);
+                        espLamp.classList.add('opacity-30');
+                        espLamp.classList.remove('active-esp-lamp');
+                        espLampText.innerText = "待機中";
+                        successOverlay.style.opacity = "0";
+
+                        sSteering.className = "p-2 rounded bg-slate-900 border border-slate-800 text-slate-400";
+                        sYaw.className = "p-2 rounded bg-slate-900 border border-slate-800 text-slate-400";
+                        sWheels.className = "p-2 rounded bg-slate-900 border border-slate-800 text-slate-400";
+
+                        statusText.innerText = "通常走行中";
+                        statusDot.className = "w-3.5 h-3.5 rounded-full bg-emerald-400";
+                    }
+
+                // ==========================================
+                // 🔴 ESP OFF の挙動：スピンアウト
+                // ==========================================
+                } else if (simMode === 'off') {
+                    
+                    if (baseIdx >= 18) {
+                        statusText.innerText = "スピン！コントロール不能";
+                        statusDot.className = "w-3.5 h-3.5 rounded-full bg-red-500";
+                        dangerOverlay.style.opacity = "1";
+
+                        // センサー自体は異常を感知するが機能しない
+                        sSteering.className = "p-2 rounded bg-blue-900/40 border border-blue-800 text-slate-400";
+                        sYaw.className = "p-2 rounded bg-red-900/60 border border-red-500 text-red-200 font-bold animate-bounce";
+                        sWheels.className = "p-2 rounded bg-slate-900 border border-slate-800 text-slate-400";
+
+                        espLamp.classList.add('opacity-30');
+                        espLampText.innerText = "非作動";
+
+                        // スピン挙動
+                        spinAngle += 0.07;
+                        offCourseX -= 0.18; // 外側へ遠心力で滑り出す
+                        offCourseZ += 0.04;
+
+                        car.position.set(targetPos.x + offCourseX, targetPos.y, targetPos.z + offCourseZ);
+                        car.rotation.y = spinAngle;
+
+                        brakeIndicators.forEach(ind => ind.visible = false);
+                    } else {
+                        car.position.copy(targetPos);
+                        car.lookAt(lookAtPoint);
+                        statusText.innerText = "カーブ接近中...";
+                        statusDot.className = "w-3.5 h-3.5 rounded-full bg-slate-400";
+                    }
+                }
+
+                // 後方追従カメラ
+                const offset = new THREE.Vector3(5, 4.5, -8); 
+                offset.applyQuaternion(car.quaternion); 
+                
+                const targetCamPos = car.position.clone().add(offset);
+                camera.position.lerp(targetCamPos, 0.08);
+                camera.lookAt(car.position.clone().add(new THREE.Vector3(0, 0.5, 0)));
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // --- イベントリスナー ---
+        document.getElementById('btn-esp-off').addEventListener('click', () => {
+            resetSimulation();
+            simMode = 'off';
+            isPlaying = true;
+        });
+
+        document.getElementById('btn-esp-on').addEventListener('click', () => {
+            resetSimulation();
+            simMode = 'on';
+            isPlaying = true;
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            resetSimulation();
+        });
+
+        // リサイズ調整
+        window.addEventListener('resize', () => {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newWidth, newHeight);
+        });
+    </script>
+</body>
+</html>
